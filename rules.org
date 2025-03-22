@@ -1,0 +1,15 @@
+* Doppelkopf Train v2 Rules
+
+This file describes the rules and features of the Doppelkopf Train v2 game.
+
+** General Game Rules
+   - [Describe general game rules here]
+
+** Feature-Specific Rules
+   - [Describe rules specific to each feature here]
+
+** Card Values
+   - [Describe card values here]
+
+** Gameplay
+   - [Describe the gameplay flow here]

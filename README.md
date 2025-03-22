@@ -1,4 +1,4 @@
-# Project Title: [Your Project Title Here]
+# Project Title: Doppelkopf Train v2
 
 ## Project Description
 
@@ -17,6 +17,7 @@ This project is a new game inspired by the previous game, focusing on data-drive
 *   Data will be the first citizen and the most important
 *   Planning before coding
 *   A rule file will be maintained with every feature
+*   Game state object will be logged and printed after every move
 
 ## Technology Stack
 
