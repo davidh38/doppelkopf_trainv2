@@ -2,7 +2,7 @@
 
 ## Project Description
 
-This project is a new game inspired by the previous game, focusing on data-driven design and a functional approach.
+This project is a new game inspired by the previous game, focusing on data-driven design and a functional approach. The `tests` folder is for unit tests.
 
 ## Key Features
 
