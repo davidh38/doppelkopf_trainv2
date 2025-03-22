@@ -13,3 +13,21 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
 
 ** Gameplay
    - [Describe the gameplay flow here]
+
+** Data Structures
+   - The following immutable data structures will be created:
+     - game
+     - player
+     - table
+   - A table can play one or more games
+   - 4 players are needed to play a game
+   - A player may be of type human or AI
+   - The user gets a random UUID, which is sent with every request to identify the user
+   - The server keeps track of all players and tables of the server
+
+** Frontend
+   - In order to have a more seamless user experience, we will add Socket.IO.
+   - There will be 3 main windows:
+     - Lobby for game joining and creation
+     - The gameplay itself
+     - Game summary
