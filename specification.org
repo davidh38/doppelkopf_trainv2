@@ -31,3 +31,9 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
      - Lobby for game joining and creation
      - The gameplay itself
      - Game summary
+   - For identification, JavaScript code will post a UUID with every request.
+
+** Testing
+   - For a testing mode, the players can play random but legible cards to a certain point. This can be reproduced.
+   - Also, game states should be saved and be able to be started with.
+   - For example, a game can be simulated to have run 4 times to the fifth trick. This data structure: user should then be able to connect to the game with the right identification.
