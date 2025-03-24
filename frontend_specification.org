@@ -1,0 +1,9 @@
+* Frontend Specification
+
+This file details the frontend implementation.
+
+** Functions
+
+* output_lobby()
+   - Outputs all players in the lobby
+   - Outputs all tables with the players in the table
