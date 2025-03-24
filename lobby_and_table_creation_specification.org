@@ -20,7 +20,11 @@ The table creation process includes the following steps:
 3. The table needs to be added to the lobby table list.
 4. Every player can join the table.
 5. The game can be started by any player,that has joined the thable as soon as 4 players have joined the table.
-6. The start of a game assigns a game dict to the table.
+6. The start of a game assigns a game dict to the table, and sets the table mode to "running".
+
+When the table is created, it should be in "open" mode.
+When the game is played, it should be in "running" mode.
+If the play is done, it should be in "closed" mode.
 
 ** Function Descriptions
 
@@ -36,8 +40,16 @@ The table creation process includes the following steps:
 
 * create_table(name, round)
    - Create table dict
+   - change status to  running
    - Add table_dict to lobby
 
 * add_player_to_table(table, player_name)
    - Check for max of 4 players
    - Else: add player to table
+
+* start_table(table)
+   - Check if player is sitting at the table
+   - Consistency check: are four players at the table
+   - Change mode to running mode
+   - Assign a game_dict to the table
+   - Call init_game function -> todo
