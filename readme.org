@@ -20,40 +20,13 @@ This project is a new game inspired by the previous game, focusing on data-drive
 * Technology Stack
 Flask, Python, JavaScript
 
-* Getting Started
-[Instructions on how to set up and run the project]
+* ADDR
+- [[data_structures.org][Data Structures]]
+- [[frontend_specification.org][Frontend Specification]]
+- [[gameplay_specification.org][Gameplay Specification]]
+- [[lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]]
 
-* Contributing
-New features will be implemented via pull requests. Please follow the project's coding standards and best practices when contributing.
-
-* License
-[Your License Here]
-
-* Specifications
-- [[specification.org][This file describes the rules and features of the Doppelkopf Train v2 game.]]
-- [[frontend_specification.org][This file details the frontend implementation.]]
-- [[gameplay_specification.org][This file details the gameplay mechanics and rules for the Doppelkopf Train v2 game.]]
-- [[lobby_and_table_creation_specification.org][This file details the server initialization flow and table creation process.]]
-
-* Doppelkopf Train v2 Rules
-This file describes the rules and features of the Doppelkopf Train v2 game.
-
-** General Game Rules
-- [Describe general game rules here]
-
-** Feature-Specific Rules
-- [Describe rules specific to each feature here]
-
-** Card Values
-- [Describe card values here]
-
-** Gameplay
-- See [[./gameplay_specification.org][Gameplay Specification]] for detailed gameplay mechanics and rules
-
-** Data Structures
-- See [[data_structures.org][Data Structures]] for details on the data structures used in the game.
-
-** Frontend
+* Frontend
 - In order to have a more seamless user experience, we will add Socket.IO.
 - There will be 3 main windows:
   - Lobby for game joining and creation
@@ -61,32 +34,38 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
   - Game summary
 - For identification, JavaScript code will post a UUID with every request.
 
-** Testing
+* Testing
 - For a testing mode, the players can play random but legible cards to a certain point. This can be reproduced.
 - Also, game states should be saved and be able to be started with.
 - For example, a game can be simulated to have run 4 times to the fifth trick. This data structure: user should then be able to connect to the game with the right identification.
 - A game should be replayable by the UI
 
-** Principles
+* Principles
 - Features and design and decisions should be reasons without reasons should have arguments
 
-** Architecture
+* Architecture
 - Clean bound boundaries for reuse and flexibility
 
-** Implementation Files
+* Implementation Files
 - src/backend/data_structures.py: Contains the definitions of the core data structures (playerdict, tabledict, gamedict, card_dict)
 - src/backend/table_handler.py: Handles table management operations (creating tables, adding/removing players, etc.)
 - src/backend/game_handler.py: Manages game mechanics and state (card dealing, turn management, card playing logic, etc.)
 - src/backend/game_summary.py: Calculates and generates game summaries (scores, statistics, history recording, etc.)
 - src/backend/game_logger.py: Handles logging of game state after every turn (for debugging, replay, and recovery)
 
-** Specification Files
+* Specification Files
 - [[./frontend_specification.org][Frontend Specification]]
-- [[./gameplay_specification.org][Gameplay Specification]]
-- [[./lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]]
-- [[./table_creation_specification.org][Table Creation Specification]]
+- [[gameplay_specification.org][Gameplay Specification]]
+- [[lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]]
+- [[table_creation_specification.org][Table Creation Specification]]
 
-** Logging
+* Gameplay
+- See [[./gameplay_specification.org][Gameplay Specification]] for detailed gameplay mechanics and rules
+
+* Data Structures
+- See [[data_structures.org][Data Structures]] for details on the data structures used in the game.
+
+* Logging
 - The game state will be logged after every turn
 - Logging will capture the complete gamedict at each step
 - This will enable:
