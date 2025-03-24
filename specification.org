@@ -12,7 +12,7 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - [Describe card values here]
 
 ** Gameplay
-   - [Describe the gameplay flow here]
+   - See [[./gameplay_specification.org][Gameplay Specification]] for detailed gameplay mechanics and rules
 
 ** Data Structures
    - The following immutable data structures will be created:

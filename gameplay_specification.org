@@ -1,0 +1,35 @@
+* Doppelkopf Gameplay Specification
+
+This file details the gameplay mechanics and rules for the Doppelkopf Train v2 game.
+
+** Card Deck
+   - Composition of the deck
+   - Card rankings and values
+
+** Game Phases
+   - Setup phase
+   - Dealing phase
+   - Bidding/Announcement phase
+   - Playing phase
+   - Scoring phase
+
+** Turn Structure
+   - Player order
+   - Valid actions on a turn
+   - Turn resolution
+
+** Card Playing Rules
+   - Leading a trick
+   - Following suit
+   - Trump rules
+   - Winning a trick
+
+** Scoring System
+   - Point values
+   - Calculating round scores
+   - Calculating game scores
+
+** Special Rules
+   - Solo variants
+   - Announcements (Re, Kontra, etc.)
+   - Special conditions
