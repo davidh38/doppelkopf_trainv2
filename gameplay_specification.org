@@ -13,6 +13,36 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
    - Playing phase
    - Scoring phase
 
+** Game Flow
+   1. Create game
+      - Shuffle the cards
+      - Distribute the cards to players
+   2. Determine first player to act
+   3. Variant selection for each player
+   4. Variant computation and game mode determination
+   5. If game mode is "armut" (poverty):
+      - Players exchange cards
+   6. Play ten trick rounds:
+      - Compute eligibility for announcements
+      - Determine eligible cards for current player
+      - Each player plays a card
+      - Evaluate trick to determine winner
+      - Determine next player to act
+   7. Compute round win
+   8. Compute game summary and final scores
+
+** Core Functions
+   - create_game: Initializes a new game, shuffles and distributes cards
+   - set_variant: Allows a player to select their variant
+   - evaluate_game_mode: Determines the game mode based on player variants
+   - determine_next_player: Identifies which player acts next
+   - get_eligible_cards: Determines which cards a player can legally play
+   - check_announcement_eligibility: Determines if a player can make announcements
+   - play_card: Processes a player playing a card
+   - evaluate_trick: Determines which player won the trick
+   - calculate_round_win: Determines the winners of a round
+   - calculate_game_win: Calculates final game results
+
 ** Turn Structure
    - Player order
    - Valid actions on a turn
