@@ -16,6 +16,14 @@ table_dict = {
     "game": None      # Current game being played at the table
 }
 
+# Announcement dictionary structure
+announcement_dict = {
+    "player_id": "",  # UUID of the player who made the announcement
+    "type": "",       # Type of announcement (e.g., "re", "kontra", "no90", "no60", etc.)
+    "trick_number": 0,  # At which trick the announcement was made (0 means before first trick)
+    "timestamp": ""   # When the announcement was made
+}
+
 # Game dictionary structure
 game_dict = {
     "rounds": 0,      # Total number of rounds to be played in this game
@@ -28,6 +36,7 @@ game_dict = {
     "mode": "",       # Game mode: "solo", "normal", etc.
     "round_phase": "",  # Current phase: "variant", "armut" (poverty), "playing"
     "eligible_announcements": {},  # Announcements each player can make (e.g., "re", "kontra")
+    "announcements": [],  # List of all announcements made in the game
     "round_scores": {}  # Current scores for each player in this round
 }
 
@@ -44,3 +53,4 @@ PLAYER_TYPES = ["human", "computer"]
 TABLE_STATUSES = ["waiting", "playing"]
 GAME_MODES = ["normal", "solo"]
 ROUND_PHASES = ["variant", "armut", "playing"]
+ANNOUNCEMENT_TYPES = ["re", "kontra", "no90", "no60", "no30", "schwarz"]
