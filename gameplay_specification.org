@@ -3,8 +3,7 @@
 This file details the gameplay mechanics and rules for the Doppelkopf Train v2 game.
 
 ** Server Initialization
-   1. Creating lobby
-   2. Waiting for players to connect
+   - See [[./lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]] for details on server initialization and table creation.
 
 ** Game Flow
    1. [[./player_connection_specification.org][Player Connection]] - Player connects to the server

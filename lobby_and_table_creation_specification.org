@@ -1,0 +1,23 @@
+* Server Initialization Specification
+
+This file details the server initialization flow.
+
+1. Player connects to the site
+2. Check for session token
+3. If session token:
+   add player to lobby
+else:
+   return player_login
+
+* Table Creation Flow Specification
+
+A table has a property called rounds, which determines how many rounds a table will be played.
+
+The table creation process includes the following steps:
+
+1. A table can be created by a player that is in the lobby.
+2. The number of rounds needs to be defined, and a table name must be provided.
+3. The table needs to be added to the lobby table list.
+4. Every player can join the table.
+5. The game can be started by any player,that has joined the thable as soon as 4 players have joined the table.
+6. The start of a game assigns a game dict to the table.
