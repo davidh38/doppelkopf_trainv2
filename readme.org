@@ -7,16 +7,27 @@ This project is a new game inspired by the previous game, focusing on data-drive
 ## Key Features
 
 *   Gemini or API flatrates for money saving
+
 *   The logic should be easily explainable
+
 *   Every game state should be fast attainable in an easy way for example: play a last trick and press new game
+
 *   GUI should have no logic at all except for showing, no special routes, everything depends on the game state
+
 *   New features will be implemented by pull requests
+
 *   Unit tests will test the game like in the last game
+
 *   The reuse of the old versions code should be done
+
 *   More functional
+
 *   Data will be the first citizen and the most important
+
 *   Planning before coding
+
 *   A rule file will be maintained with every feature
+
 *   Game state object will be logged and printed after every move
 
 ## Technology Stack
@@ -43,124 +54,199 @@ New features will be implemented via pull requests. Please follow the project's 
 
 *   [gameplay_specification.org](gameplay_specification.org): This file details the gameplay mechanics and rules for the Doppelkopf Train v2 game.
 
-*   [lobby_and_table_creation_specification.org](lobby_and_table_creation_specification.org): This file details the server initialization flow and table creation process.
+*   [lobby_and_table_creation.org](lobby_and_table_creation_specification.org): This file details the server initialization flow and table creation process.
 
 * Doppelkopf Train v2 Rules
 
 This file describes the rules and features of the Doppelkopf Train v2 game.
 
 ** General Game Rules
+
    - [Describe general game rules here]
 
 ** Feature-Specific Rules
+
    - [Describe rules specific to each feature here]
 
 ** Card Values
+
    - [Describe card values here]
 
 ** Gameplay
+
    - See [[./gameplay_specification.org][Gameplay Specification]] for detailed gameplay mechanics and rules
 
 ** Data Structures
+
    - The following immutable data structures will be created:
 
 *** playerdict
+
    - session: str  # Unique session identifier for the current connection
+
    - name: str     # Display name of the player
+
    - type: str     # Player type: "human" or "computer" for AI
+
    - uuid: str     # Persistent unique identifier for the player across sessions
 
 *** lobbystatusdict
+
    - players: List[playerdict]     # List of players currently connected to the server
+
    - tables: List[tabledict]       # List of available tables
 
 *** tabledict
+
    - tablename: str                # Descriptive name of the table shown in the lobby
+
    - players: List[playerdict]     # List of players currently at the table (up to 4)
+
    - status: str                   # Table status: "waiting" for players or "playing" a game
+
    - game: gamedict                # The table consists of a game_dict
+
    - rounds: int                   # Determines how many rounds a table will be played
+
    - mode: str                   # Can be "open", "running", or "closed"
 
 *** announcementdict
+
    - player_id: str           # UUID of the player who made the announcement
+
    - type: str                # Type of announcement (e.g., "re", "kontra", "no90", "no60", etc.)
+
    - trick_number: int        # At which trick the announcement was made (0 means before first trick)
+
    - timestamp: datetime      # When the announcement was made
 
 *** rounddict
+
    - players: List[playerdict]     # Players participating in this round
+
    - cards: Dict[uuid, List[Card]] # Mapping of player UUIDs to their current hand of cards
+
    - current_player: str           # UUID of the player whose turn it is
+
    - eligible_cards: List[Card]    # Cards that the current player is allowed to play
+
    - mode: str                     # Game mode: "solo", "normal", etc.
+
    - phase: str                    # Current phase: "variant", "armut" (poverty), "playing"
+
    - eligible_announcements: Dict  # Announcements each player can make (e.g., "re", "kontra")
+
    - player_teams: Dict[str, str]  # Mapping of player UUIDs to their team assignment ("re", "kontra", "unknown")
+
    - announcements: List[announcementdict]  # List of all announcements made in this round
+
    - tricks: Dict[int, List[Tuple[str, Card]]]  # Tricks played in this round, keyed by trick number
                                                # Each trick is a list of (player_id, card) tuples
+
    - score: Dict                  # Scores for this specific round
 
 *** gamedict
+
    Each game is a dict of rounds:
+
    - rounds: Dict[int, rounddict]  # Dictionary mapping round numbers to round dictionaries (1: round1_dict, 2: round2_dict, ...)
+
    - start_time: datetime          # When the game started
+
    - end_time: datetime            # When the game ended (null if ongoing)
+
    - players: List[playerdict]     # Players who participated in this game
+
    - final_score: Dict             # Final accumulated score for the game
 
    - A table can play one or more games
+
    - 4 players are needed to play a game
-   - A player may be of type human or AI
+
    - The user gets a random UUID, which is sent with every request to identify the user
+
    - The server keeps track of all players and tables of the server
+
    - The frontend will receive a filtered version of the gamedict based on the player's perspective
 
 ** Frontend
+
    - In order to have a more seamless user experience, we will add Socket.IO.
+
    - There will be 3 main windows:
+
      - Lobby for game joining and creation
+
      - The gameplay itself
+
      - Game summary
+
    - For identification, JavaScript code will post a UUID with every request.
 
 ** Testing
+
    - For a testing mode, the players can play random but legible cards to a certain point. This can be reproduced.
+
    - Also, game states should be saved and be able to be started with.
+
    - For example, a game can be simulated to have run 4 times to the fifth trick. This data structure: user should then be able to connect to the game with the right identification.
+
    - A game should be replayable by the UI
 
 ** Principles
+
    - Features and design and decisions should be reasons without reasons should have arguments
 
 ** Architecture
+
    - Clean bound boundaries for reuse and flexibility
 
 ** Implementation Files
+
    - src/backend/data_structures.py: Contains the definitions of the core data structures (playerdict, tabledict, gamedict, card_dict)
+
    - src/backend/table_handler.py: Handles table management operations (creating tables, adding/removing players, etc.)
+
    - src/backend/game_handler.py: Manages game mechanics and state (card dealing, turn management, card playing logic, etc.)
+
    - src/backend/game_summary.py: Calculates and generates game summaries (scores, statistics, history recording, etc.)
+
    - src/backend/game_logger.py: Handles logging of game state after every turn (for debugging, replay, and recovery)
 
 ** Specification Files
+
    - [[./frontend_specification.org][Frontend Specification]]
+
    - [[./gameplay_specification.org][Gameplay Specification]]
+
    - [[./lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]]
+
    - [[./table_creation_specification.org][Table Creation Specification]]
 
 ** Logging
+
    - The game state will be logged after every turn
+
    - Logging will capture the complete gamedict at each step
+
    - This will enable:
+
      - Debugging of game mechanics
+
      - Replay of games for analysis
+
      - Recovery in case of errors or disconnections
+
    - Implementation details:
+
      - A new file src/backend/game_logger.py will handle logging functionality
+
      - Logs will be stored in a structured format (JSON)
+
      - Each game will have its own log file with timestamp and game ID
+
      - Log files will be stored in a logs/ directory
+
    - The logging system will be designed to have minimal impact on performance
+
    - Logs can be used to recreate any point in the game's history
