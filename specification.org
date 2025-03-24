@@ -16,14 +16,38 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
 
 ** Data Structures
    - The following immutable data structures will be created:
-     - game
-     - player
-     - table
+
+*** playerdict
+   - session: str  # Unique session identifier for the current connection
+   - name: str     # Display name of the player
+   - type: str     # Player type: "human" for real players, "computer" for AI
+   - uuid: str     # Persistent unique identifier for the player across sessions
+
+*** tabledict
+   - tablename: str                # Descriptive name of the table shown in the lobby
+   - players: List[playerdict]     # List of players currently at the table (up to 4)
+   - status: str                   # Table status: "waiting" for players or "playing" a game
+   - game: gamedict                # Current game being played at the table
+
+*** gamedict
+   - rounds: int                   # Total number of rounds to be played in this game
+   - round: int                    # Current round number (1-based index)
+   - players: List[playerdict]     # Players participating in the game
+   - cards: Dict[uuid, List[Card]] # Mapping of player UUIDs to their current hand of cards
+   - tricks: List[Tuple]           # History of all tricks played so far in the current round
+   - current_player: str           # UUID of the player whose turn it is
+   - eligible_cards: List[Card]    # Cards that the current player is allowed to play
+   - mode: str                     # Game mode: "solo", "normal", etc.
+   - round_phase: str              # Current phase: "variant", "armut" (poverty), "playing"
+   - eligible_announcements: Dict  # Announcements each player can make (e.g., "re", "kontra")
+   - round_scores: Dict            # Current scores for each player in this round
+
    - A table can play one or more games
    - 4 players are needed to play a game
    - A player may be of type human or AI
    - The user gets a random UUID, which is sent with every request to identify the user
    - The server keeps track of all players and tables of the server
+   - The frontend will receive a filtered version of the gamedict based on the player's perspective
 
 ** Frontend
    - In order to have a more seamless user experience, we will add Socket.IO.
@@ -37,3 +61,10 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - For a testing mode, the players can play random but legible cards to a certain point. This can be reproduced.
    - Also, game states should be saved and be able to be started with.
    - For example, a game can be simulated to have run 4 times to the fifth trick. This data structure: user should then be able to connect to the game with the right identification.
+   - A game should be replayable by the UI
+
+** Principles
+   - Features and design and decisions should be reasons without reasons should have arguments
+
+** Architecture
+   - Clean bound boundaries for reuse and flexibility
