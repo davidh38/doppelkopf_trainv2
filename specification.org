@@ -68,3 +68,9 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
 
 ** Architecture
    - Clean bound boundaries for reuse and flexibility
+
+** Implementation Files
+   - src/backend/data_structures.py: Contains the definitions of the core data structures (playerdict, tabledict, gamedict, card_dict)
+   - src/backend/table_handler.py: Handles table management operations (creating tables, adding/removing players, etc.)
+   - src/backend/game_handler.py: Manages game mechanics and state (card dealing, turn management, card playing logic, etc.)
+   - src/backend/game_summary.py: Calculates and generates game summaries (scores, statistics, history recording, etc.)
