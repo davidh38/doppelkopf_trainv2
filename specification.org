@@ -47,6 +47,7 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - round_phase: str              # Current phase: "variant", "armut" (poverty), "playing"
    - eligible_announcements: Dict  # Announcements each player can make (e.g., "re", "kontra")
    - announcements: List[announcementdict]  # List of all announcements made in the game
+   - player_teams: Dict[str, str]  # Mapping of player UUIDs to their team assignment ("re", "kontra", "unknown")
    - round_scores: Dict            # Current scores for each player in this round
 
    - A table can play one or more games

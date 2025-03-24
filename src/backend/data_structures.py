@@ -37,6 +37,7 @@ game_dict = {
     "round_phase": "",  # Current phase: "variant", "armut" (poverty), "playing"
     "eligible_announcements": {},  # Announcements each player can make (e.g., "re", "kontra")
     "announcements": [],  # List of all announcements made in the game
+    "player_teams": {},  # Mapping of player UUIDs to their team assignment ("re", "kontra", "unknown")
     "round_scores": {}  # Current scores for each player in this round
 }
 
@@ -54,3 +55,4 @@ TABLE_STATUSES = ["waiting", "playing"]
 GAME_MODES = ["normal", "solo"]
 ROUND_PHASES = ["variant", "armut", "playing"]
 ANNOUNCEMENT_TYPES = ["re", "kontra", "no90", "no60", "no30", "schwarz"]
+TEAM_TYPES = ["re", "kontra", "unknown"]
