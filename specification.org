@@ -29,6 +29,12 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - status: str                   # Table status: "waiting" for players or "playing" a game
    - game: gamedict                # Current game being played at the table
 
+*** announcementdict
+   - player_id: str           # UUID of the player who made the announcement
+   - type: str                # Type of announcement (e.g., "re", "kontra", "no90", "no60", etc.)
+   - trick_number: int        # At which trick the announcement was made (0 means before first trick)
+   - timestamp: datetime      # When the announcement was made
+
 *** gamedict
    - rounds: int                   # Total number of rounds to be played in this game
    - round: int                    # Current round number (1-based index)
@@ -40,6 +46,7 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - mode: str                     # Game mode: "solo", "normal", etc.
    - round_phase: str              # Current phase: "variant", "armut" (poverty), "playing"
    - eligible_announcements: Dict  # Announcements each player can make (e.g., "re", "kontra")
+   - announcements: List[announcementdict]  # List of all announcements made in the game
    - round_scores: Dict            # Current scores for each player in this round
 
    - A table can play one or more games
