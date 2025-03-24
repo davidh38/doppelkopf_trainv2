@@ -34,3 +34,13 @@ New features will be implemented via pull requests. Please follow the project's 
 ## License
 
 [Your License Here]
+
+## Specifications
+
+*   [specification.org](specification.org): This file describes the rules and features of the Doppelkopf Train v2 game.
+
+*   [frontend_specification.org](frontend_specification.org): This file details the frontend implementation.
+
+*   [gameplay_specification.org](gameplay_specification.org): This file details the gameplay mechanics and rules for the Doppelkopf Train v2 game.
+
+*   [lobby_and_table_creation_specification.org](lobby_and_table_creation_specification.org): This file details the server initialization flow and table creation process.
