@@ -1,0 +1,67 @@
+* Doppelkopf Gameplay Specification
+
+This file details the gameplay mechanics and rules for the Doppelkopf Train v2 game.
+
+** Card Deck
+   - Composition of the deck
+   - Card rankings and values
+
+** Game Phases
+   - Setup phase
+   - Dealing phase
+   - Bidding/Announcement phase
+   - Playing phase
+   - Scoring phase
+
+** Game Flow
+   1. Create game
+      - Shuffle the cards
+      - Distribute the cards to players
+   2. Determine first player to act
+   3. Variant selection for each player
+   4. Variant computation and game mode determination
+   5. If game mode is "armut" (poverty):
+      - Players exchange cards
+   6. Play ten trick rounds:
+      - Note: After game mode is determined, any player can make announcements at any time if they are eligible
+      - For each trick round:
+        a. Determine eligible cards for the current player to act
+        b. Let current player play a card
+        c. Evaluate trick to determine winner
+        d. Determine next player to act
+   7. Compute round win
+   8. Compute game summary and final scores
+
+** Core Functions
+   - create_game: Initializes a new game, shuffles and distributes cards
+   - set_variant: Allows a player to select their variant
+   - evaluate_game_mode: Determines the game mode based on player variants
+   - determine_next_player: Identifies which player acts next
+   - get_eligible_cards: Determines which cards a player can legally play
+   - check_announcement_eligibility: Determines if a player can make announcements (can be called at any time after game mode is determined)
+   - make_announcement: Processes a player making an announcement (can be done at any time if eligible)
+   - play_card: Processes a player playing a card
+   - evaluate_trick: Determines which player won the trick
+   - calculate_round_win: Determines the winners of a round
+   - calculate_game_win: Calculates final game results
+
+** Turn Structure
+   - Player order
+   - Valid actions on a turn
+   - Turn resolution
+
+** Card Playing Rules
+   - Leading a trick
+   - Following suit
+   - Trump rules
+   - Winning a trick
+
+** Scoring System
+   - Point values
+   - Calculating round scores
+   - Calculating game scores
+
+** Special Rules
+   - Solo variants
+   - Announcements (Re, Kontra, etc.)
+   - Special conditions
