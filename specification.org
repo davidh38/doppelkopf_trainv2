@@ -28,6 +28,7 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - players: List[playerdict]     # List of players currently at the table (up to 4)
    - status: str                   # Table status: "waiting" for players or "playing" a game
    - game: gamedict                # The table consists of a game_dict
+   - rounds: int                   # Determines how many rounds a table will be played
 
 *** announcementdict
    - player_id: str           # UUID of the player who made the announcement
