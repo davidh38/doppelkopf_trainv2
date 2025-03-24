@@ -20,14 +20,19 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
 *** playerdict
    - session: str  # Unique session identifier for the current connection
    - name: str     # Display name of the player
-   - type: str     # Player type: "human" for real players, "computer" for AI
+   - type: str     # Player type: "human" or "computer" for AI
    - uuid: str     # Persistent unique identifier for the player across sessions
+
+*** lobbystatusdict
+   - players: List[playerdict]     # List of players currently connected to the server
+   - tables: List[tabledict]       # List of available tables
 
 *** tabledict
    - tablename: str                # Descriptive name of the table shown in the lobby
    - players: List[playerdict]     # List of players currently at the table (up to 4)
    - status: str                   # Table status: "waiting" for players or "playing" a game
    - game: gamedict                # The table consists of a game_dict
+   - rounds: int                   # Determines how many rounds a table will be played
 
 *** announcementdict
    - player_id: str           # UUID of the player who made the announcement
@@ -48,10 +53,6 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - tricks: Dict[int, List[Tuple[str, Card]]]  # Tricks played in this round, keyed by trick number
                                                # Each trick is a list of (player_id, card) tuples
    - score: Dict                  # Scores for this specific round
-
-*** lobbystatusdict
-   - players: List[playerdict]     # List of players currently connected to the server
-   - tables: List[tabledict]       # List of available tables
 
 *** gamedict
    Each game is a dict of rounds:

@@ -13,7 +13,8 @@ table_dict = {
     "tablename": "",  # Descriptive name of the table shown in the lobby
     "players": [],    # List of players currently at the table (up to 4)
     "status": "",     # Table status: "waiting" for players or "playing" a game
-    "game": None      # The table consists of a game_dict
+    "game": None,      # The table consists of a game_dict
+    "rounds": 0       # Determines how many rounds a table will be played
 }
 
 # Announcement dictionary structure

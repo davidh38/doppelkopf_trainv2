@@ -1,1 +1,3 @@
-\n
+* Table Creation Flow Specification
+
+A table has a property called rounds, which determines how many rounds a table will be played.
