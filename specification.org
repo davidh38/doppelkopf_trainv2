@@ -49,6 +49,10 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
                                                # Each trick is a list of (player_id, card) tuples
    - score: Dict                  # Scores for this specific round
 
+*** lobbystatusdict
+   - players: List[playerdict]     # List of players currently connected to the server
+   - tables: List[tabledict]       # List of available tables
+
 *** gamedict
    Each game is a dict of rounds:
    - rounds: Dict[int, rounddict]  # Dictionary mapping round numbers to round dictionaries (1: round1_dict, 2: round2_dict, ...)

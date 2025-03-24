@@ -14,10 +14,11 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
    - Scoring phase
 
 ** Game Flow
-   1. Create game
+   1. [[./table_creation_specification.org][Create game]]
       - Shuffle the cards
       - Distribute the cards to players
-   2. Determine first player to act
+   2. [[./player_connection_specification.org][Player Connection]]
+   3. Determine first player to act
    3. Variant selection for each player
    4. Variant computation and game mode determination
    5. If game mode is "armut" (poverty):
