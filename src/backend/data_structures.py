@@ -13,7 +13,7 @@ table_dict = {
     "tablename": "",  # Descriptive name of the table shown in the lobby
     "players": [],    # List of players currently at the table (up to 4)
     "status": "",     # Table status: "waiting" for players or "playing" a game
-    "game": None      # Current game being played at the table
+    "game": None      # The table consists of a game_dict
 }
 
 # Announcement dictionary structure
@@ -24,8 +24,16 @@ announcement_dict = {
     "timestamp": ""   # When the announcement was made
 }
 
-# Round data dictionary structure
-round_data_dict = {
+# Round dictionary structure
+round_dict = {
+    "players": [],       # Players participating in this round
+    "cards": {},         # Mapping of player UUIDs to their current hand of cards
+    "current_player": "",  # UUID of the player whose turn it is
+    "eligible_cards": [],  # Cards that the current player is allowed to play
+    "mode": "",          # Game mode: "solo", "normal", etc.
+    "phase": "",         # Current phase: "variant", "armut" (poverty), "playing"
+    "eligible_announcements": {},  # Announcements each player can make (e.g., "re", "kontra")
+    "player_teams": {},  # Mapping of player UUIDs to their team assignment ("re", "kontra", "unknown")
     "announcements": [],  # List of all announcements made in this round
     "tricks": {},        # Tricks played in this round, keyed by trick number
                          # Each trick is a list of (player_id, card) tuples
@@ -34,18 +42,8 @@ round_data_dict = {
 
 # Game dictionary structure
 game_dict = {
-    "rounds_total": 0,   # Total number of rounds to be played in this game
-    "current_round": 0,  # Current round number (1-based index)
-    "players": [],       # Players participating in the game
-    "cards": {},         # Mapping of player UUIDs to their current hand of cards
-    "current_player": "",  # UUID of the player whose turn it is
-    "eligible_cards": [],  # Cards that the current player is allowed to play
-    "mode": "",          # Game mode: "solo", "normal", etc.
-    "round_phase": "",   # Current phase: "variant", "armut" (poverty), "playing"
-    "eligible_announcements": {},  # Announcements each player can make (e.g., "re", "kontra")
-    "player_teams": {},  # Mapping of player UUIDs to their team assignment ("re", "kontra", "unknown")
-    "round_data": {},    # Data for each round, keyed by round number
-    "scores": {}         # Overall scores for the game
+    "rounds": {}, # Dictionary mapping round numbers (int) to round_dict objects
+    # Example: {1: round_dict1, 2: round_dict2, ...}
 }
 
 # Card dictionary structure
