@@ -2,16 +2,9 @@
 
 This file details the gameplay mechanics and rules for the Doppelkopf Train v2 game.
 
-** Card Deck
-   - Composition of the deck
-   - Card rankings and values
-
-** Game Phases
-   - Setup phase
-   - Dealing phase
-   - Bidding/Announcement phase
-   - Playing phase
-   - Scoring phase
+** Server Initialization
+   1. Creating lobby
+   2. Waiting for players to connect
 
 ** Game Flow
    1. [[./player_connection_specification.org][Player Connection]] - Player connects to the server
@@ -35,6 +28,17 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
   10. Compute round win
   11. Compute game summary and final scores
 
+** Card Deck
+   - Composition of the deck
+   - Card rankings and values
+
+** Game Phases
+   - Setup phase
+   - Dealing phase
+   - Bidding/Announcement phase
+   - Playing phase
+   - Scoring phase
+   
 ** Core Functions
    - create_game: Initializes a new game, shuffles and distributes cards
    - set_variant: Allows a player to select their variant
