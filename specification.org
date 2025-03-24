@@ -35,20 +35,25 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - trick_number: int        # At which trick the announcement was made (0 means before first trick)
    - timestamp: datetime      # When the announcement was made
 
+*** rounddata
+   - announcements: List[announcementdict]  # List of all announcements made in this round
+   - tricks: Dict[int, List[Tuple[str, Card]]]  # Tricks played in this round, keyed by trick number
+                                               # Each trick is a list of (player_id, card) tuples
+   - score: Dict                  # Scores for this specific round
+
 *** gamedict
-   - rounds: int                   # Total number of rounds to be played in this game
-   - round: int                    # Current round number (1-based index)
+   - rounds_total: int             # Total number of rounds to be played in this game
+   - current_round: int            # Current round number (1-based index)
    - players: List[playerdict]     # Players participating in the game
    - cards: Dict[uuid, List[Card]] # Mapping of player UUIDs to their current hand of cards
-   - tricks: List[Tuple]           # History of all tricks played so far in the current round
    - current_player: str           # UUID of the player whose turn it is
    - eligible_cards: List[Card]    # Cards that the current player is allowed to play
    - mode: str                     # Game mode: "solo", "normal", etc.
    - round_phase: str              # Current phase: "variant", "armut" (poverty), "playing"
    - eligible_announcements: Dict  # Announcements each player can make (e.g., "re", "kontra")
-   - announcements: List[announcementdict]  # List of all announcements made in the game
    - player_teams: Dict[str, str]  # Mapping of player UUIDs to their team assignment ("re", "kontra", "unknown")
-   - round_scores: Dict            # Current scores for each player in this round
+   - round_data: Dict[int, rounddata] # Data for each round, keyed by round number
+   - scores: Dict                  # Overall scores for the game
 
    - A table can play one or more games
    - 4 players are needed to play a game

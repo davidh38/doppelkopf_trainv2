@@ -24,21 +24,28 @@ announcement_dict = {
     "timestamp": ""   # When the announcement was made
 }
 
+# Round data dictionary structure
+round_data_dict = {
+    "announcements": [],  # List of all announcements made in this round
+    "tricks": {},        # Tricks played in this round, keyed by trick number
+                         # Each trick is a list of (player_id, card) tuples
+    "score": {}          # Scores for this specific round
+}
+
 # Game dictionary structure
 game_dict = {
-    "rounds": 0,      # Total number of rounds to be played in this game
-    "round": 0,       # Current round number (1-based index)
-    "players": [],    # Players participating in the game
-    "cards": {},      # Mapping of player UUIDs to their current hand of cards
-    "tricks": [],     # History of all tricks played so far in the current round
+    "rounds_total": 0,   # Total number of rounds to be played in this game
+    "current_round": 0,  # Current round number (1-based index)
+    "players": [],       # Players participating in the game
+    "cards": {},         # Mapping of player UUIDs to their current hand of cards
     "current_player": "",  # UUID of the player whose turn it is
     "eligible_cards": [],  # Cards that the current player is allowed to play
-    "mode": "",       # Game mode: "solo", "normal", etc.
-    "round_phase": "",  # Current phase: "variant", "armut" (poverty), "playing"
+    "mode": "",          # Game mode: "solo", "normal", etc.
+    "round_phase": "",   # Current phase: "variant", "armut" (poverty), "playing"
     "eligible_announcements": {},  # Announcements each player can make (e.g., "re", "kontra")
-    "announcements": [],  # List of all announcements made in the game
     "player_teams": {},  # Mapping of player UUIDs to their team assignment ("re", "kontra", "unknown")
-    "round_scores": {}  # Current scores for each player in this round
+    "round_data": {},    # Data for each round, keyed by round number
+    "scores": {}         # Overall scores for the game
 }
 
 # Card dictionary structure
