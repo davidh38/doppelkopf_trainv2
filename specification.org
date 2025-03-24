@@ -74,3 +74,19 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - src/backend/table_handler.py: Handles table management operations (creating tables, adding/removing players, etc.)
    - src/backend/game_handler.py: Manages game mechanics and state (card dealing, turn management, card playing logic, etc.)
    - src/backend/game_summary.py: Calculates and generates game summaries (scores, statistics, history recording, etc.)
+   - src/backend/game_logger.py: Handles logging of game state after every turn (for debugging, replay, and recovery)
+
+** Logging
+   - The game state will be logged after every turn
+   - Logging will capture the complete gamedict at each step
+   - This will enable:
+     - Debugging of game mechanics
+     - Replay of games for analysis
+     - Recovery in case of errors or disconnections
+   - Implementation details:
+     - A new file src/backend/game_logger.py will handle logging functionality
+     - Logs will be stored in a structured format (JSON)
+     - Each game will have its own log file with timestamp and game ID
+     - Log files will be stored in a logs/ directory
+   - The logging system will be designed to have minimal impact on performance
+   - Logs can be used to recreate any point in the game's history
