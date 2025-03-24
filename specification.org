@@ -101,7 +101,6 @@ This file describes the rules and features of the Doppelkopf Train v2 game.
    - [[./frontend_specification.org][Frontend Specification]]
    - [[./gameplay_specification.org][Gameplay Specification]]
    - [[./lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]]
-   - [[./server_init_specification.org][Server Init Specification]]
    - [[./table_creation_specification.org][Table Creation Specification]]
 
 ** Logging

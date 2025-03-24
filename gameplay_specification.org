@@ -51,6 +51,38 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
    - evaluate_trick: Determines which player won the trick
    - calculate_round_win: Determines the winners of a round
    - calculate_game_win: Calculates final game results
+   - init_game: Initializes a new game, shuffles and distributes cards
+     - Parameters: current_round
+       - Assigns a game to the game_dict of the current round
+       - Creates cards
+       - If round 0:
+         - Randomly chooses first card giver
+         - Shuffles cards
+         - Distributes cards to the players in game
+   - create_cards: Creates a deck of cards with ace, king, queen, jack, ten, 9 for every suit two times.
+     - Returns: card list
+   - shuffle_cards: Shuffles the given list of cards.
+     - Parameters: cards
+     - Returns: shuffled cards
+   - random_choose_card_giver: Randomly chooses a card giver from the list of players.
+     - Parameters: players
+     - Returns: player
+   - distribute_cards: Distributes cards to the players.
+     - Parameters: cards, players
+   - variant_selection: Allows players to select their variant.
+     - Parameters: players
+       - Determines the person next to the card giver.
+       - For each player starting with the determined person:
+         - Variant selection: (player, variant)
+   - evuluate_variant: Evaluates the selected variant.
+     - Returns: variant
+   - play_cards: Plays the cards for 10 tricks.
+     - For 10 tricks:
+       - For four players:
+         - Play card
+   - play_card: Adds a card played by a player to the current trick.
+     - Parameters: card, player, current_trick
+       - Adds card, player to current trick
 
 ** Turn Structure
    - Player order
