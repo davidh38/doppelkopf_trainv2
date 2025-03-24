@@ -22,20 +22,22 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
    4. Variant computation and game mode determination
    5. If game mode is "armut" (poverty):
       - Players exchange cards
-   6. Play ten trick rounds:
+   6. Determine which team (Re or Kontra) each player belongs to
       - Note: After game mode is determined, any player can make announcements at any time if they are eligible
+   7. Play ten trick rounds:
       - For each trick round:
         a. Determine eligible cards for the current player to act
         b. Let current player play a card
         c. Evaluate trick to determine winner
         d. Determine next player to act
-   7. Compute round win
-   8. Compute game summary and final scores
+   8. Compute round win
+   9. Compute game summary and final scores
 
 ** Core Functions
    - create_game: Initializes a new game, shuffles and distributes cards
    - set_variant: Allows a player to select their variant
    - evaluate_game_mode: Determines the game mode based on player variants
+   - determine_player_team: Evaluates which team (Re or Kontra) a player belongs to based on their cards and the game mode
    - determine_next_player: Identifies which player acts next
    - get_eligible_cards: Determines which cards a player can legally play
    - check_announcement_eligibility: Determines if a player can make announcements (can be called at any time after game mode is determined)
