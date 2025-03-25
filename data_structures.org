@@ -14,10 +14,8 @@
 *** tabledict
 - tablename: str                # Descriptive name of the table shown in the lobby
 - players: List[playerdict]     # List of players currently at the table (up to 4)
-- status: str                   # Table status: "waiting" for players or "playing" a game
-- game: gamedict                # The table consists of a game_dict
-- rounds: int                   # Determines how many rounds a table will be played
-- mode: str                   # Can be "open", "running", or "closed"
+- rounds: List[rounddict]       # List of rounds associated with this table
+- status: str                   # Table status: "waiting", "running", or "closed"
 
 *** announcementdict
 - player_id: str           # UUID of the player who made the announcement
@@ -26,7 +24,6 @@
 - timestamp: datetime      # When the announcement was made
 
 *** rounddict
-- players: List[playerdict]     # Players participating in this round
 - cards: Dict[uuid, List[Card]] # Mapping of player UUIDs to their current hand of cards
 - current_player: str           # UUID of the player whose turn it is
 - eligible_cards: List[Card]    # Cards that the current player is allowed to play
@@ -38,17 +35,13 @@
 - tricks: Dict[int, List[Tuple[str, Card]]]  # Tricks played in this round, keyed by trick number
                                                # Each trick is a list of (player_id, card) tuples
 - score: Dict                  # Scores for this specific round
-
-*** gamedict
-Each game is a dict of rounds:
-- rounds: Dict[int, rounddict]  # Dictionary mapping round numbers to round dictionaries (1: round1_dict, 2: round2_dict, ...)
 - start_time: datetime          # When the game started
 - end_time: datetime            # When the game ended (null if ongoing)
 - players: List[playerdict]     # Players who participated in this game
 - final_score: Dict             # Final accumulated score for the game
 
-- A table can play one or more games
-- 4 players are needed to play a game
-- The user gets a random UUID, which is sent with every request to identify the user
-- The server keeps track of all players and tables of the server
-- The frontend will receive a filtered version of the gamedict based on the player's perspective
+*** card_dict
+- suit: str       # Card suit
+- rank: str       # Card rank
+- value: int      # Card point value
+- is_trump: bool  # Whether the card is a trump card
