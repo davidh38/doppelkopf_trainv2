@@ -1,25 +1,23 @@
 # data_structures.py
 
-from typing import List, Optional, NamedTuple
-from datetime import datetime
+from typing import List, Optional, Dict, Any
 
-class Player(NamedTuple):
-    session: str
-    name: str
-    type: str
-    uuid: str
+# Type definitions using simple dict types
+PlayerType = Dict[str, str]  # {session: str, name: str, type: str, uuid: str}
 
-class Table(NamedTuple):
-    tablename: str
-    players: List[str]
-    status: str
-    rounds: Optional[List]
-    num_rounds: int
-    game_dict: str
+TableType = Dict[str, Any]  # {
+                           #   tablename: str,
+                           #   players: List[str],
+                           #   status: str,
+                           #   rounds: Optional[List],
+                           #   num_rounds: int,
+                           #   game_dict: str
+                           # }
 
-class LobbyStatus(NamedTuple):
-    players: List[str]
-    tables: List[Table]
+LobbyStatusType = Dict[str, List[Any]]  # {
+                                       #   players: List[str],
+                                       #   tables: List[TableType]
+                                       # }
 
 # Constants for reference
 PLAYER_TYPES = ["human", "computer"]
