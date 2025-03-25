@@ -13,22 +13,23 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
       - Shuffle the cards.
       - Distribute the cards to the players.
    2. **Determine First Player:**
-      - Determine the first player to act.
-   3. **Variant Selection:**
+      - Determine the first player to act
+   3. for one round:
+      **Variant Selection:**
       - Each player selects a variant.
    4. **Variant Computation:**
       - Compute the game mode based on selected variants.
    5. **Poverty (Armut) Handling (if applicable):**
       - Players exchange cards if the game mode is "Armut".
-   6. **Team Determination:**
-      - Determine which team (Re or Kontra) each player belongs to.
-      - *Note:* Players can make announcements at any time if eligible.
-   7. **Trick Rounds (10 rounds):**
+   6. **Trick Rounds (10 rounds):**
       - For each trick round:
         a. Determine eligible cards for the current player.
         b. The current player plays a card.
-        c. Evaluate the trick to determine the winner.
-        d. Determine the next player to act.
+        c. if teams not clear:
+              Determine which team (Re or Kontra) each player belongs to.
+        d. Evaluate the trick to determine the winner.
+        e. Determine the next player to act.     
+      - *Note:* Players can make announcements at any time if eligible.
    8. **Round Score Calculation:**
       - Compute the round win.
    9. **Game Summary:**
@@ -91,7 +92,6 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
    - Playing phase
    - Scoring phase
    
-
 
 ** Turn Structure
    - Player order
