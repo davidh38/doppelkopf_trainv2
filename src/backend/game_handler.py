@@ -3,11 +3,31 @@
 
 from typing import Dict, Tuple, List, Optional
 from datetime import datetime
+from functools import reduce
 import random
 from .data_structures import (
     create_player, create_table, create_card,
     GAME_MODES, GAME_PHASES, TEAM_TYPES
 )
+
+def create_initial_game_state(players: Tuple[Dict, ...]) -> Dict:
+    """Create initial game state without any mutations"""
+    return {
+        "cards": {},           # Player hands
+        "current_player": "",  # UUID of current player
+        "eligible_cards": (),  # Playable cards
+        "mode": "normal",      # Game mode
+        "phase": "variant",    # Game phase
+        "eligible_announcements": {},  # Possible announcements
+        "player_teams": {p["uuid"]: "unknown" for p in players},  # Player team assignments
+        "announcements": (),   # Made announcements
+        "tricks": {},          # Played tricks
+        "score": {},          # Round scores
+        "start_time": datetime.now(),  # Round start
+        "end_time": None,     # Round end
+        "players": players,    # Participating players
+        "final_score": {}     # Final round score
+    }
 
 def gameflow(table: Dict) -> Dict:
     """
@@ -45,53 +65,54 @@ def gameflow(table: Dict) -> Dict:
        - Calculate round scores
        - Update game summary
     """
-    # Initialize new game state
-    game = {
-        "cards": {},           # Player hands
-        "current_player": "",  # UUID of current player
-        "eligible_cards": (),  # Playable cards
-        "mode": "normal",      # Game mode
-        "phase": "variant",    # Game phase
-        "eligible_announcements": {},  # Possible announcements
-        "player_teams": {p["uuid"]: "unknown" for p in table["players"]},  # Player team assignments
-        "announcements": (),   # Made announcements
-        "tricks": {},          # Played tricks
-        "score": {},          # Round scores
-        "start_time": datetime.now(),  # Round start
-        "end_time": None,     # Round end
-        "players": table["players"],  # Participating players
-        "final_score": {}     # Final round score
-    }
+    # Create new states for each phase instead of mutating
+    game = create_initial_game_state(table["players"])
+    game = initialize_game(game)
+    game = handle_variant_phase(game)
+    game = handle_poverty_phase(game) if game["mode"] == "armut" else game
+    game = play_all_tricks(game)
+    game = finalize_game(game)
     
-    # 1. Game Initialization
+    # Create new table state with updated rounds
+    return create_updated_table(table, game)
+
+def initialize_game(game: Dict) -> Dict:
+    """Initialize game state with cards and first player"""
     cards = create_cards()
     shuffled_cards = shuffle_cards(cards)
-    game["cards"] = distribute_cards(shuffled_cards, table["players"])
-    game["current_player"] = determine_first_player(table["players"])
+    distributed_cards = distribute_cards(shuffled_cards, game["players"])
+    first_player = determine_first_player(game["players"])
     
-    # 2. Variant Selection Phase
-    game["mode"] = handle_variant_selection(game)
-    
-    # 3. Poverty (Armut) Phase
-    if game["mode"] == "armut":
-        game = handle_poverty_phase(game)
-    
-    # 4. Playing Phase
-    game["phase"] = "playing"
-    for trick_number in range(10):  # 10 tricks per round
-        game = play_trick(game, trick_number)
-        
-        # After each trick, check if we need to update team assignments
-        if not all_teams_known(game["player_teams"]):
-            game["player_teams"] = update_team_assignments(game)
-    
-    # 5. Scoring Phase
+    return {
+        **game,
+        "cards": distributed_cards,
+        "current_player": first_player
+    }
+
+def handle_variant_phase(game: Dict) -> Dict:
+    """Handle variant selection phase"""
+    return {
+        **game,
+        "mode": "normal"  # For now, always normal mode
+    }
+
+def play_all_tricks(game: Dict) -> Dict:
+    """Play all tricks in a functional way"""
+    game_with_phase = {**game, "phase": "playing"}
+    return reduce(play_trick, range(10), game_with_phase)
+
+def finalize_game(game: Dict) -> Dict:
+    """Calculate final scores and end game"""
     scores = calculate_round_score(game)
-    game["score"] = scores
-    game["final_score"] = scores  # For now, final score is same as round score
-    game["end_time"] = datetime.now()
-    
-    # Update table with new game
+    return {
+        **game,
+        "score": scores,
+        "final_score": scores,
+        "end_time": datetime.now()
+    }
+
+def create_updated_table(table: Dict, game: Dict) -> Dict:
+    """Create new table state with updated rounds"""
     new_rounds = table["rounds"] + (game,)
     return {
         **table,
@@ -99,93 +120,83 @@ def gameflow(table: Dict) -> Dict:
         "status": "waiting" if len(new_rounds) < table.get("num_rounds", 1) else "closed"
     }
 
-def create_cards() -> List[Dict]:
+def create_cards() -> Tuple[Dict, ...]:
     """Create a complete deck of Doppelkopf cards"""
-    suits = ["hearts", "spades", "diamonds", "clubs"]
-    ranks = [
+    suits = ("hearts", "spades", "diamonds", "clubs")
+    ranks = (
         ("ace", 11), ("ten", 10), ("king", 4),
         ("queen", 3), ("jack", 2)  # Removed nine to get 40 cards total (10 per player)
-    ]
+    )
     
-    cards = []
-    # In Doppelkopf, each card appears twice
-    for _ in range(2):
-        for suit in suits:
-            for rank, value in ranks:
-                # Queens of clubs are always trump
-                # All diamonds are trump
-                is_trump = (suit == "diamonds") or (suit == "clubs" and rank == "queen")
-                cards.append(create_card(suit, rank, value, is_trump))
-    
-    return cards
+    # Create all cards in a functional way using list comprehension
+    return tuple(
+        create_card(suit, rank, value, (suit == "diamonds") or (suit == "clubs" and rank == "queen"))
+        for _ in range(2)  # Each card appears twice
+        for suit in suits
+        for rank, value in ranks
+    )
 
-def shuffle_cards(cards: List[Dict]) -> List[Dict]:
-    """Shuffle the deck of cards"""
-    shuffled = list(cards)  # Create a copy to not modify original
+def shuffle_cards(cards: Tuple[Dict, ...]) -> Tuple[Dict, ...]:
+    """Create new shuffled tuple of cards"""
+    shuffled = list(cards)  # Convert to list for shuffling
     random.shuffle(shuffled)
-    return shuffled
+    return tuple(shuffled)  # Convert back to immutable tuple
 
-def distribute_cards(cards: List[Dict], players: Tuple[Dict, ...]) -> Dict[str, Tuple[Dict, ...]]:
-    """Distribute cards to players"""
+def distribute_cards(cards: Tuple[Dict, ...], players: Tuple[Dict, ...]) -> Dict[str, Tuple[Dict, ...]]:
+    """Distribute cards to players, returning new immutable state"""
     if not players or not cards:
         return {}
     
-    cards_per_player = len(cards) // len(players)  # Should be 10 cards per player
-    distribution = {}
-    
-    for i, player in enumerate(players):
-        start = i * cards_per_player
-        end = start + cards_per_player
-        distribution[player["uuid"]] = tuple(cards[start:end])
-    
-    return distribution
+    cards_per_player = len(cards) // len(players)
+    return {
+        player["uuid"]: tuple(cards[i * cards_per_player:(i + 1) * cards_per_player])
+        for i, player in enumerate(players)
+    }
 
 def determine_first_player(players: Tuple[Dict, ...]) -> str:
     """Determine which player goes first"""
-    if not players:
-        return ""
-    # For now, randomly select first player
-    return random.choice(players)["uuid"]
-
-def handle_variant_selection(game: Dict) -> str:
-    """Handle the variant selection phase"""
-    # For now, always return normal game mode
-    return "normal"
+    return random.choice(players)["uuid"] if players else ""
 
 def handle_poverty_phase(game: Dict) -> Dict:
-    """Handle the poverty (armut) phase if applicable"""
-    return game
+    """Handle poverty phase, returning new state"""
+    return game  # For now, no changes
 
 def play_trick(game: Dict, trick_number: int) -> Dict:
-    """Play a single trick"""
-    # For testing, just simulate trick completion
-    game["tricks"][trick_number] = ()
+    """Play a single trick, returning new state"""
+    # Create new tricks state with this trick
+    new_tricks = {**game["tricks"], trick_number: ()}
     
-    # Simulate team assignment (in real implementation this would be based on cards played)
-    if trick_number == 0:
-        player_uuids = [p["uuid"] for p in game["players"]]
-        # Randomly assign two players to each team
-        random.shuffle(player_uuids)
-        game["player_teams"].update({
-            player_uuids[0]: "re",
-            player_uuids[1]: "re",
-            player_uuids[2]: "kontra",
-            player_uuids[3]: "kontra"
-        })
+    # Create new teams state if needed
+    new_teams = (
+        assign_teams(game["players"])
+        if trick_number == 0 else
+        game["player_teams"]
+    )
     
-    return game
+    return {
+        **game,
+        "tricks": new_tricks,
+        "player_teams": new_teams
+    }
+
+def assign_teams(players: Tuple[Dict, ...]) -> Dict[str, str]:
+    """Assign teams to players, returning new teams state"""
+    player_uuids = [p["uuid"] for p in players]
+    random.shuffle(player_uuids)
+    
+    return {
+        player_uuids[0]: "re",
+        player_uuids[1]: "re",
+        player_uuids[2]: "kontra",
+        player_uuids[3]: "kontra"
+    }
 
 def all_teams_known(player_teams: Dict[str, str]) -> bool:
     """Check if all player teams are known"""
     return all(team != "unknown" for team in player_teams.values())
 
-def update_team_assignments(game: Dict) -> Dict[str, str]:
-    """Update team assignments based on played cards"""
-    return game["player_teams"]
-
 def calculate_round_score(game: Dict) -> Dict:
     """Calculate the score for the round"""
-    # For testing, return dummy scores for both teams
     return {
         "re": 2,
         "kontra": 1
