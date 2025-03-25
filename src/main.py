@@ -5,12 +5,7 @@ Determines which frontend to use based on configuration.
 
 from typing import NoReturn
 from src.config import get_frontend_type, VALID_FRONTEND_TYPES
-
-def run_terminal_frontend() -> NoReturn:
-    """Run the terminal frontend."""
-    print("Terminal frontend selected")
-    # Terminal frontend implementation will go here
-    raise NotImplementedError("Terminal frontend not implemented yet")
+from src.frontend.terminal.lobby_table_output import run_terminal_frontend
 
 def run_web_frontend() -> NoReturn:
     """Run the web frontend."""

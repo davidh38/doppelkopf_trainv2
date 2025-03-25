@@ -7,3 +7,24 @@ This file details the frontend implementation.
 * output_lobby()
    - Outputs all players in the lobby
    - Outputs all tables with the players in the table
+
+* render_screen()
+   - Clears the terminal screen for clean display
+   - Shows current lobby status using output_lobby()
+   - Shows current player's token if connected
+   - Displays menu of available actions based on connection state:
+
+   If not connected:
+     5 [name]        - Connect player (e.g., "5 john")
+
+   If connected (token required for all commands):
+     1 [table_name]  - Create new table (e.g., "1 mytable [token]")
+     2 [table_name]  - Join table (e.g., "2 mytable [token]")
+     3 [table_name]  - Start table (e.g., "3 mytable [token]")
+     4               - Exit (e.g., "4 [token]")
+
+   - Gets and returns user input choice
+   - Returns: tuple containing (command, args, token)
+     - command: string containing the numeric command (1-5)
+     - args: string containing any additional arguments (table name, player name)
+     - token: string containing the player's token (None if not connected)
