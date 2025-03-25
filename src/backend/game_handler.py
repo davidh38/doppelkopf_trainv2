@@ -10,6 +10,28 @@ from .data_structures import (
     GAME_MODES, GAME_PHASES, TEAM_TYPES
 )
 
+def play_table_rounds(table: Dict) -> Dict:
+    """
+    Play all rounds for a table.
+    
+    Args:
+        table: The table to play rounds for
+        
+    Returns:
+        Updated table with all rounds completed
+        
+    This function manages the complete lifecycle of a table by:
+    1. Getting the number of rounds to play from table settings
+    2. Calling gameflow() for each round
+    3. Returning the final table state with all rounds
+    """
+    num_rounds = table.get("num_rounds", 1)
+    for _ in range(num_rounds):
+        table = gameflow(table)
+        if table["status"] == "closed":
+            break
+    return table
+
 def create_initial_game_state(players: Tuple[Dict, ...]) -> Dict:
     """Create initial game state without any mutations"""
     return {

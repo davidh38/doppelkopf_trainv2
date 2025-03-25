@@ -2,6 +2,7 @@
 
 from typing import Tuple, Callable, List, Dict, Any
 from src.backend.data_structures import PlayerType, TableType, LobbyStatusType
+from .game_handler import play_table_rounds
 
 def create_empty_lobby() -> LobbyStatusType:
     """
@@ -137,10 +138,14 @@ def start_table_pure(status: LobbyStatusType, table: TableType) -> Tuple[LobbySt
     """
     # TODO: Implement player sitting at the table check
     if len(table["players"]) == 4:
+        # First set table to running state
         updated_table = {
             **table,
             "status": "running"
         }
+        
+        # Play all rounds for the table
+        updated_table = play_table_rounds(updated_table)
         
         # Find the table in the status.tables list and replace it
         updated_tables = []
@@ -155,7 +160,6 @@ def start_table_pure(status: LobbyStatusType, table: TableType) -> Tuple[LobbySt
             "tables": updated_tables
         }
         
-        # TODO: Assign a game_dict to the table
         return new_status, True, updated_table
     else:
         return status, False, table

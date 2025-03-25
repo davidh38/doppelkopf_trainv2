@@ -70,11 +70,11 @@ def render_screen(lobby_list: List[PlayerType], token: Optional[str] = None) -> 
     # Show menu based on connection state
     print("\nAvailable actions:")
     if not token:
-        print("  5 [name]        - Connect player (e.g., \"5 john\")")
+        print("  5 [name]                - Connect player (e.g., \"5 john\")")
     else:
-        print("  1 [table_name]  - Create new table (e.g., \"1 mytable\")")
-        print("  2 [table_name]  - Join table (e.g., \"2 mytable\")")
-        print("  3 [table_name]  - Start table (e.g., \"3 mytable\")")
+        print("  1 [table_name] [rounds] - Create new table (e.g., \"1 mytable 3\")")
+        print("  2 [table_name]          - Join table (e.g., \"2 mytable\")")
+        print("  3 [table_name]          - Start table (e.g., \"3 mytable\")")
         print("  4               - Exit")
     
     # Get and parse input
@@ -108,11 +108,17 @@ def run_terminal_frontend() -> NoReturn:
                 input("Press Enter to continue...")
             
             elif command == "1" and token:  # Create table
-                if not args:
-                    print("\nError: Table name required")
+                parts = args.split()
+                if len(parts) < 2:
+                    print("\nError: Table name and number of rounds required (e.g., \"1 mytable 3\")")
                 else:
-                    table = create_table(args, 10)  # Default 10 rounds
-                    print(f"\nCreated table: {table['tablename']}")
+                    try:
+                        table_name = parts[0]
+                        rounds = int(parts[1])
+                        table = create_table(table_name, rounds)
+                        print(f"\nCreated table: {table['tablename']} with {rounds} rounds")
+                    except ValueError:
+                        print("\nError: Number of rounds must be a valid number")
                 input("Press Enter to continue...")
             
             elif command == "2" and token:  # Join table
