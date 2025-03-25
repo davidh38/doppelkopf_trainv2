@@ -6,26 +6,79 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
    - See [[./lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]] for details on server initialization and table creation.
 
 ** Game Flow
-   1. [[./player_connection_specification.org][Player Connection]] - Player connects to the server
-   2. [[./table_creation_specification.org][Create game]] - Player creates a table
-      - Shuffle the cards
-      - Distribute the cards to players
-   3. Other players join the table
-   4. Determine first player to act
-   5. Variant selection for each player
-   6. Variant computation and game mode determination
-   7. If game mode is "armut" (poverty):
-      - Players exchange cards
-   8. Determine which team (Re or Kontra) each player belongs to
-      - Note: After game mode is determined, any player can make announcements at any time if they are eligible
-   9. Play ten trick rounds:
+   The following steps are executed for each round of the table.
+   Precondition: Table is created.
+
+   1. **Game Initialization:**
+      - Shuffle the cards.
+      - Distribute the cards to the players.
+   2. **Determine First Player:**
+      - Determine the first player to act.
+   3. **Variant Selection:**
+      - Each player selects a variant.
+   4. **Variant Computation:**
+      - Compute the game mode based on selected variants.
+   5. **Poverty (Armut) Handling (if applicable):**
+      - Players exchange cards if the game mode is "Armut".
+   6. **Team Determination:**
+      - Determine which team (Re or Kontra) each player belongs to.
+      - *Note:* Players can make announcements at any time if eligible.
+   7. **Trick Rounds (10 rounds):**
       - For each trick round:
-        a. Determine eligible cards for the current player to act
-        b. Let current player play a card
-        c. Evaluate trick to determine winner
-        d. Determine next player to act
-  10. Compute round win
-  11. Compute game summary and final scores
+        a. Determine eligible cards for the current player.
+        b. The current player plays a card.
+        c. Evaluate the trick to determine the winner.
+        d. Determine the next player to act.
+   8. **Round Score Calculation:**
+      - Compute the round win.
+   9. **Game Summary:**
+      - Compute the game summary and final scores.
+
+
+** Game Initialization (game init)
+   - **init_game(current_round):** Initializes a new game.
+     - *Parameters:*
+       - `current_round`: The current round number.
+     - *Actions:*
+       - Assigns a game to the `game_dict` of the current round.
+       - Creates cards.
+       - If `round` is 0:
+         - Randomly chooses the first card giver.
+         - Shuffles the cards.
+         - Distributes the cards to the players.
+   - **create_cards():** Creates a deck of cards.
+     - *Returns:* A list of card dictionaries.
+   - **shuffle_cards(cards):** Shuffles a list of cards.
+     - *Parameters:*
+       - `cards`: The list of cards to shuffle.
+     - *Returns:* The shuffled list of cards.
+
+** Determine first player to act
+   - random_choose_card_giver: Randomly chooses a card giver from the list of players.
+     - Parameters: players
+     - Returns: player
+   - distribute_cards: Distributes cards to the players.
+     - Parameters: cards, players
+
+
+** variant selection and evaluation
+   - variant_selection: Allows players to select their variant.
+     - Parameters: players
+       - Determines the person next to the card giver.
+       - For each player starting with the determined person:
+         - Variant selection: (player, variant)
+   - evaluate_variant: Evaluates the selected variant.
+     - Returns: variant
+
+** gameplay
+   - play_cards: Plays the cards for 10 tricks.
+     - For 10 tricks:
+       - For four players:
+         - Play card
+   - play_card: Adds a card played by a player to the current trick.
+     - Parameters: card, player, current_trick
+       - Adds card, player to current trick
+** summary
 
 ** Card Deck
    - Composition of the deck
@@ -38,51 +91,7 @@ This file details the gameplay mechanics and rules for the Doppelkopf Train v2 g
    - Playing phase
    - Scoring phase
    
-** Core Functions
-   - create_game: Initializes a new game, shuffles and distributes cards
-   - set_variant: Allows a player to select their variant
-   - evaluate_game_mode: Determines the game mode based on player variants
-   - determine_player_team: Evaluates which team (Re or Kontra) a player belongs to based on their cards and the game mode
-   - determine_next_player: Identifies which player acts next
-   - get_eligible_cards: Determines which cards a player can legally play
-   - check_announcement_eligibility: Determines if a player can make announcements (can be called at any time after game mode is determined)
-   - make_announcement: Processes a player making an announcement (can be done at any time if eligible)
-   - play_card: Processes a player playing a card
-   - evaluate_trick: Determines which player won the trick
-   - calculate_round_win: Determines the winners of a round
-   - calculate_game_win: Calculates final game results
-   - init_game: Initializes a new game, shuffles and distributes cards
-     - Parameters: current_round
-       - Assigns a game to the game_dict of the current round
-       - Creates cards
-       - If round 0:
-         - Randomly chooses first card giver
-         - Shuffles cards
-         - Distributes cards to the players in game
-   - create_cards: Creates a deck of cards with ace, king, queen, jack, ten, 9 for every suit two times.
-     - Returns: card list
-   - shuffle_cards: Shuffles the given list of cards.
-     - Parameters: cards
-     - Returns: shuffled cards
-   - random_choose_card_giver: Randomly chooses a card giver from the list of players.
-     - Parameters: players
-     - Returns: player
-   - distribute_cards: Distributes cards to the players.
-     - Parameters: cards, players
-   - variant_selection: Allows players to select their variant.
-     - Parameters: players
-       - Determines the person next to the card giver.
-       - For each player starting with the determined person:
-         - Variant selection: (player, variant)
-   - evuluate_variant: Evaluates the selected variant.
-     - Returns: variant
-   - play_cards: Plays the cards for 10 tricks.
-     - For 10 tricks:
-       - For four players:
-         - Play card
-   - play_card: Adds a card played by a player to the current trick.
-     - Parameters: card, player, current_trick
-       - Adds card, player to current trick
+
 
 ** Turn Structure
    - Player order

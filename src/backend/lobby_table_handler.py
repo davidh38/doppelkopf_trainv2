@@ -68,7 +68,6 @@ def start_table(table):
     if len(table["players"]) == 4:
         table["status"] = "running"
         # TODO: Assign a game_dict to the table
-        # TODO: Call init_game function
         return True
     else:
         return False
