@@ -1,30 +1,32 @@
 # src/frontend/lobby_table_output.py
 
-from typing import Tuple, Optional
-from src.backend.lobby_table_handler import table_list
+from typing import Tuple, Optional, List
+from src.backend.lobby_table_handler import get_lobby_status
+from src.backend.data_structures import Table
 
-def output_lobby(lobby_list):
+def output_lobby(lobby_list: List[str]) -> None:
     """
     Outputs all players in the lobby
     Outputs all tables with the players in the table
     """
+    lobby_status = get_lobby_status()
     print("Lobby:")
     print("  Players:")
     for player in lobby_list:
         print(f"    - {player}")
     print("  Tables:")
-    for table in table_list:
-        print(f"    - {table['tablename']} (Players: {table['players']})")
+    for table in lobby_status.tables:
+        print(f"    - {table.tablename} (Players: {table.players})")
 
-def output_table(table):
+def output_table(table: Table) -> None:
     """
     Outputs the table information
     """
     print("Table:")
-    print(f"  - Name: {table['tablename']}")
-    print(f"  - Players: {table['players']}")
+    print(f"  - Name: {table.tablename}")
+    print(f"  - Players: {table.players}")
 
-def render_screen(lobby_list, token: Optional[str] = None) -> Tuple[str, str, Optional[str]]:
+def render_screen(lobby_list: List[str], token: Optional[str] = None) -> Tuple[str, str, Optional[str]]:
     """
     Renders the current screen and gets user input.
     
