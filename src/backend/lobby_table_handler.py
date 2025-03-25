@@ -1,9 +1,9 @@
 # lobby_table_handler.py
 
+from typing import Tuple, Callable, List
 from src.backend.data_structures import Player, Table, LobbyStatus
-import functools
 
-def create_empty_lobby():
+def create_empty_lobby() -> LobbyStatus:
     """
     Create an empty lobby status.
     
@@ -15,7 +15,7 @@ def create_empty_lobby():
 # Pure functions that don't use global state
 # These are the core functions that implement the business logic
 
-def connect_player_pure(status, token):
+def connect_player_pure(status: LobbyStatus, token: str) -> Tuple[LobbyStatus, bool]:
     """
     Pure function version of connect_player that doesn't use global variables.
     
@@ -36,7 +36,7 @@ def connect_player_pure(status, token):
     else:
         return status, False
 
-def login_player_pure(status, name):
+def login_player_pure(status: LobbyStatus, name: str) -> Tuple[LobbyStatus, Player]:
     """
     Pure function version of login_player that doesn't use global variables.
     
@@ -56,7 +56,7 @@ def login_player_pure(status, name):
     )
     return new_status, player
 
-def create_table_pure(status, name, rounds):
+def create_table_pure(status: LobbyStatus, name: str, rounds: int) -> Tuple[LobbyStatus, Table]:
     """
     Pure function version of create_table that doesn't use global variables.
     
@@ -75,7 +75,7 @@ def create_table_pure(status, name, rounds):
     )
     return new_status, table
 
-def add_player_to_table_pure(status, table, player_name):
+def add_player_to_table_pure(status: LobbyStatus, table: Table, player_name: str) -> Tuple[LobbyStatus, bool, Table]:
     """
     Pure function version of add_player_to_table that doesn't use global variables.
     
@@ -106,7 +106,7 @@ def add_player_to_table_pure(status, table, player_name):
     else:
         return status, False, table
 
-def start_table_pure(status, table):
+def start_table_pure(status: LobbyStatus, table: Table) -> Tuple[LobbyStatus, bool, Table]:
     """
     Pure function version of start_table that doesn't use global variables.
     
@@ -138,7 +138,7 @@ def start_table_pure(status, table):
     else:
         return status, False, table
 
-def generate_token():
+def generate_token() -> str:
     """
     Generate a unique token for the player
     
@@ -150,14 +150,14 @@ def generate_token():
 
 # Module-level cache for the current state
 # This is not a global variable, but a closure that encapsulates the state
-def create_state_cache():
+def create_state_cache() -> Tuple[Callable[[], LobbyStatus], Callable[[LobbyStatus], None]]:
     state = create_empty_lobby()
     
-    def get_state():
+    def get_state() -> LobbyStatus:
         nonlocal state
         return state
     
-    def set_state(new_state):
+    def set_state(new_state: LobbyStatus) -> None:
         nonlocal state
         state = new_state
     
@@ -167,7 +167,7 @@ def create_state_cache():
 get_current_state, set_current_state = create_state_cache()
 
 # Public API functions that use the pure functions
-def connect_player(token):
+def connect_player(token: str) -> bool:
     """
     If token valid, add player to lobby status players list
     Else: tell the player to login
@@ -183,7 +183,7 @@ def connect_player(token):
     set_current_state(new_state)
     return success
 
-def login_player(name):
+def login_player(name: str) -> Player:
     """
     Consistency check, whether name is unique
     Create token for player
@@ -201,7 +201,7 @@ def login_player(name):
     set_current_state(new_state)
     return player
 
-def create_table(name, rounds):
+def create_table(name: str, rounds: int) -> Table:
     """
     Create table dict
     change status to open
@@ -219,7 +219,7 @@ def create_table(name, rounds):
     set_current_state(new_state)
     return table
 
-def add_player_to_table(table, player_name):
+def add_player_to_table(table: Table, player_name: str) -> bool:
     """
     Check for max of 4 players
     Else: add player to table and update the table in lobby status
@@ -236,7 +236,7 @@ def add_player_to_table(table, player_name):
     set_current_state(new_state)
     return success
 
-def start_table(table):
+def start_table(table: Table) -> bool:
     """
     Check if player is sitting at the table
     Consistency check: are four players at the table
@@ -255,7 +255,7 @@ def start_table(table):
     set_current_state(new_state)
     return success
 
-def get_lobby_status():
+def get_lobby_status() -> LobbyStatus:
     """
     Return the current lobby status
     
@@ -264,7 +264,7 @@ def get_lobby_status():
     """
     return get_current_state()
 
-def reset_lobby_status():
+def reset_lobby_status() -> LobbyStatus:
     """
     Reset the lobby status for testing purposes.
     
