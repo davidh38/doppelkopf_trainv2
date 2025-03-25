@@ -1,0 +1,4 @@
+- write functional code, if possible and performance is not at stake
+- no global variables in funcions
+- immutable data structures for readibility and reuse of code
+- no global variables
