@@ -24,7 +24,7 @@ CardDict: {
 AnnouncementDict: {
     player_id: str    # UUID of announcing player
     type: str        # Type of announcement
-    trick_number: int # Trick when announced
+    card_number: int # After which card the announcement was made (0 means before first card)
     timestamp: datetime # When announced
 }
 
@@ -85,12 +85,12 @@ def create_card(suit: str, rank: str, value: int, is_trump: bool) -> Dict:
         "is_trump": is_trump
     })
 
-def create_announcement(player_id: str, type_: str, trick_number: int, timestamp: datetime) -> Dict:
+def create_announcement(player_id: str, type_: str, card_number: int, timestamp: datetime) -> Dict:
     """Create an immutable announcement dictionary"""
     return frozendict({
         "player_id": player_id,
         "type": type_,
-        "trick_number": trick_number,
+        "card_number": card_number,
         "timestamp": timestamp
     })
 

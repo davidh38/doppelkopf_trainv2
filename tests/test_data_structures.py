@@ -25,6 +25,7 @@ def test_create_announcement_immutable():
     announcement = create_announcement("player1", "re", 0, now)
     with pytest.raises(TypeError):
         announcement["type"] = "kontra"  # Should fail - frozendict is immutable
+    assert "card_number" in announcement  # Verify we're using card_number, not trick_number
 
 def test_create_table_immutable():
     players = ()  # Empty tuple
