@@ -28,7 +28,7 @@ AnnouncementDict: {
     timestamp: datetime # When announced
 }
 
-RoundDict: {
+GameDict: {
     cards: Dict[uuid, Tuple[CardDict, ...]]  # Player hands
     current_player: str                      # UUID of current player
     eligible_cards: Tuple[CardDict, ...]     # Playable cards
@@ -48,7 +48,7 @@ RoundDict: {
 TableDict: {
     tablename: str                    # Table name
     players: Tuple[PlayerDict, ...]   # Players at table
-    rounds: Tuple[RoundDict, ...]     # Played/playing rounds
+    rounds: Tuple[GameDict, ...]      # Played/playing rounds
     status: str                       # Table status
 }
 
