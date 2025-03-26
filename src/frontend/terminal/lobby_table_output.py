@@ -3,6 +3,7 @@
 from typing import Tuple, Optional, List, NoReturn, Dict, Any
 from src.backend.lobby_table_handler import get_lobby_status, login_player, create_table, add_player_to_table, start_table
 from src.backend.data_structures import TableType, PlayerType
+from .game_output import run_game_interface
 
 def format_player(player: PlayerType) -> str:
     """Format player info for display"""
@@ -147,6 +148,9 @@ def run_terminal_frontend() -> NoReturn:
                         success = start_table(table)
                         if success:
                             print(f"\nStarted table: {table['tablename']}")
+                            # Transition to game interface
+                            run_game_interface(table, token)
+                            # After game completes, continue in lobby
                         else:
                             print("\nError: Could not start table")
                     else:
