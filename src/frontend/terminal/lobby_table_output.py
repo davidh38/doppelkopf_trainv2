@@ -44,11 +44,11 @@ def _display_menu(token: Optional[str]) -> None:
 def _get_user_input(token: Optional[str]) -> Tuple[str, str, Optional[str]]:
     """Get and parse user input"""
     user_input = input("\nEnter command: ").strip().lower()
-    parts = user_input.split(maxsplit=2)
+    parts = user_input.split()
     
     command = parts[0]
-    args = parts[1] if len(parts) > 1 else ""
-    new_token = parts[2] if len(parts) > 2 else token
+    args = " ".join(parts[1:]) if len(parts) > 1 else ""
+    new_token = token
     
     if command == "5":
         new_token = None
@@ -132,16 +132,22 @@ def _handle_command(command: str, args: str, token: Optional[str], lobby_status:
         
         elif command == "1" and token:  # Create table
             parts = args.split()
-            if len(parts) < 2:
-                print("\nError: Table name and number of rounds required (e.g., \"1 mytable 3\")")
-            else:
-                try:
+            try:
+                if len(parts) < 2:
+                    print("\nError: Both table name and number of rounds are required")
+                    print("Usage: 1 <table_name> <rounds>")
+                    print("Example: 1 mytable 3")
+                else:
                     table_name = parts[0]
                     rounds = int(parts[1])
-                    table = create_table(table_name, rounds)
-                    print(f"\nCreated table: {table['tablename']} with {rounds} rounds")
-                except ValueError:
-                    print("\nError: Number of rounds must be a valid number")
+                    if rounds <= 0:
+                        print("\nError: Number of rounds must be positive")
+                    else:
+                        table = create_table(table_name, rounds)
+                        print(f"\nCreated table: {table['tablename']} with {rounds} rounds")
+            except ValueError:
+                print("\nError: Number of rounds must be a valid positive number")
+                print("Example: 1 mytable 3")
             input("Press Enter to continue...")
             return False, token
         

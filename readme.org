@@ -89,6 +89,38 @@ The project aims to provide an accessible, well-documented platform for playing 
 - Minimal performance impact
 - Stored in logs/ directory
 
+* Getting Started
+** Running the Program
+1. Create and activate a virtual environment:
+   #+BEGIN_SRC bash
+   # Create virtual environment
+   python3 -m venv venv
+   #+END_SRC
+
+   # Activate virtual environment:
+   #+BEGIN_SRC bash
+   source venv/bin/activate  # On macOS/Linux
+   # or
+   .\venv\Scripts\activate  # On Windows
+   #+END_SRC
+
+2. Install required packages:
+   #+BEGIN_SRC bash
+   # Core dependencies
+   pip3 install frozendict flask python-socketio
+
+   # For development/testing
+   pip3 install pytest
+   #+END_SRC
+
+3. Run the program:
+   #+BEGIN_SRC bash
+   # From the project root directory:
+   PYTHONPATH=$PWD python3 src/main.py
+   # or
+   python3 -m src.main
+   #+END_SRC
+
 * Development Process
 - Feature implementation via pull requests
 - Specification updates with each feature
