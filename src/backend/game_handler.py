@@ -48,7 +48,7 @@ def create_initial_game_state(players: Tuple[Dict, ...]) -> Dict:
         "eligible_announcements": {},  # Possible announcements
         "player_teams": {p["uuid"]: "unknown" for p in players},  # Player team assignments
         "announcements": (),   # Made announcements
-        "tricks": {},          # Played tricks
+        "tricks": (),          # Played tricks as tuple of tuples
         "score": {},          # Round scores
         "start_time": datetime.now(),  # Round start
         "end_time": None,     # Round end
@@ -71,6 +71,7 @@ def gameflow(table: Dict) -> Dict:
        - Create and shuffle cards
        - Distribute to players
        - Determine first player
+       - Assign initial teams
     
     2. Variant Selection Phase
        - Each player selects variant
@@ -92,6 +93,9 @@ def gameflow(table: Dict) -> Dict:
        - Calculate round scores
        - Update game summary
     """
+    initial_state = create_initial_game_state(table["players"])
+    initial_state["player_teams"] = assign_teams(table["players"])  # Assign teams at start
+    
     return create_updated_table(
         table,
         reduce(
@@ -103,7 +107,7 @@ def gameflow(table: Dict) -> Dict:
                 play_all_tricks,
                 finalize_game
             ],
-            create_initial_game_state(table["players"])
+            initial_state
         )
     )
 
@@ -137,6 +141,7 @@ def finalize_game(game: Dict) -> Dict:
     """Calculate final scores and end game in a functional way"""
     return {
         **game,
+        "phase": "complete",
         "score": calculate_round_score(game),
         "final_score": calculate_round_score(game),
         "end_time": datetime.now()
@@ -144,10 +149,15 @@ def finalize_game(game: Dict) -> Dict:
 
 def create_updated_table(table: Dict, game: Dict) -> Dict:
     """Create new table state with updated rounds in a functional way"""
+    current_rounds = table.get("rounds", ())
+    if isinstance(current_rounds, list):
+        current_rounds = tuple(current_rounds)
+    elif current_rounds is None:
+        current_rounds = ()
     return {
         **table,
-        "rounds": table["rounds"] + (game,),
-        "status": "waiting" if len(table["rounds"]) + 1 < table.get("num_rounds", 1) else "closed"
+        "rounds": current_rounds + (game,),
+        "status": "waiting" if len(current_rounds) + 1 < table.get("num_rounds", 1) else "closed"
     }
 
 def create_cards() -> Tuple[Dict, ...]:
@@ -186,26 +196,67 @@ def handle_poverty_phase(game: Dict) -> Dict:
 
 def play_trick(game: Dict, trick_number: int) -> Dict:
     """Play a single trick, returning new state in a functional way"""
+    # Get current player's cards
+    player_uuid = game["current_player"]
+    player_cards = game["cards"][player_uuid]
+    
+    # If no cards left, skip this trick
+    if not player_cards:
+        return game
+    
+    # Play first card from player's hand
+    played_card = player_cards[0]
+    remaining_cards = player_cards[1:]
+    
+    # Create trick with all players playing their first card
+    trick = []
+    current_cards = game["cards"]
+    current_player = player_uuid
+    players_in_order = list(p["uuid"] for p in game["players"])
+    start_idx = players_in_order.index(current_player)
+    
+    # Rotate player list so current player is first
+    players_in_order = players_in_order[start_idx:] + players_in_order[:start_idx]
+    
+    # Each player plays one card
+    for player_id in players_in_order:
+        player_cards = current_cards[player_id]
+        if not player_cards:  # Skip if player has no cards
+            continue
+        card = player_cards[0]
+        trick.append({"player": player_id, "card": card})
+        current_cards = {
+            **current_cards,
+            player_id: player_cards[1:]
+        }
+    
+    # Find next player with cards
+    next_player = None
+    for player_id in players_in_order:
+        if current_cards[player_id]:
+            next_player = player_id
+            break
+    
+    # If no player has cards, keep current player
+    if next_player is None:
+        next_player = current_player
+    
+    # Update game state
     return {
         **game,
-        "tricks": {**game["tricks"], trick_number: ()},
-        "player_teams": (
-            assign_teams(game["players"])
-            if trick_number == 0 else
-            game["player_teams"]
-        )
+        "tricks": game["tricks"] + (tuple(trick),),
+        "cards": current_cards,
+        "current_player": next_player
     }
 
 def assign_teams(players: Tuple[Dict, ...]) -> Dict[str, str]:
     """Assign teams to players in a functional way"""
+    player_uuids = tuple(p["uuid"] for p in players)
+    # Randomly select 2 players for Re team
+    re_players = tuple(random.sample(player_uuids, 2))
     return {
-        uuid: "re" if i < 2 else "kontra"
-        for i, uuid in enumerate(
-            random.sample(
-                tuple(p["uuid"] for p in players),
-                len(players)
-            )
-        )
+        uuid: "re" if uuid in re_players else "kontra"
+        for uuid in player_uuids
     }
 
 def all_teams_known(player_teams: Dict[str, str]) -> bool:
