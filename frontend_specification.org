@@ -1,14 +1,17 @@
 * Frontend Specification
 
-This file details the frontend implementation.
+This file details the frontend implementation for both terminal and web interfaces.
+For network protocol and data structure specifications, see network_specification.org.
 
-** Functions
+** Terminal Interface
 
-* output_lobby()
+*** Functions
+
+**** output_lobby()
    - Outputs all players in the lobby
    - Outputs all tables with the players in the table
 
-* render_screen()
+**** render_screen()
    - Clears the terminal screen for clean display
    - Shows current lobby status using output_lobby()
    - Shows current player's token if connected
@@ -23,8 +26,52 @@ This file details the frontend implementation.
      3 [table_name]  - Start table (e.g., "3 mytable [token]")
      4               - Exit (e.g., "4 [token]")
 
-   - Gets and returns user input choice
-   - Returns: tuple containing (command, args, token)
+   Returns: tuple containing (command, args, token)
      - command: string containing the numeric command (1-5)
      - args: string containing any additional arguments (table name, player name)
      - token: string containing the player's token (None if not connected)
+
+** Web Interface
+
+*** Components
+
+**** LoginForm
+- Input field for player name
+- Connect button
+- Handles player registration and token storage
+
+**** LobbyView
+- Real-time display of connected players
+- List of available tables with player counts
+- Create table form with:
+  - Table name input
+  - Number of rounds input
+  - Create button
+- Join/Start buttons for each table
+- Logout button
+
+**** TableView
+- Display of current table status
+- List of players in table
+- Start game button (visible to table creator)
+- Leave table button
+
+*** State Management
+- Current player token
+- Connection status
+- Current view (login/lobby/table)
+- Lobby data (players, tables)
+- Current table data
+
+*** WebSocket Events
+- Handle incoming lobby updates
+- Update UI components in real-time
+- Manage table state changes
+- Handle game start/end transitions
+
+*** Styling
+- Responsive design for various screen sizes
+- Clear visual hierarchy
+- Consistent color scheme and typography
+- Interactive elements (buttons, forms) styling
+- Status indicators for connection state
