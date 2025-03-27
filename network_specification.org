@@ -1,0 +1,60 @@
+* Network Specification
+
+This file details the network protocol implementation for the Doppelkopf game.
+
+** WebSocket Protocol
+
+*** Connection Management
+- Server endpoint: ws://localhost:[port]/game
+- Connection establishment process
+- Heartbeat mechanism
+- Reconnection handling
+- Connection state tracking
+
+*** Message Protocol
+**** Common Message Structure
+- Format: JSON
+- Base structure: {type: string, payload: any, timestamp: number}
+- Error handling format: {type: "error", code: number, message: string}
+
+**** Message Types
+***** Player Management
+- player_connect: {name: string} -> {token: string}
+- player_disconnect: {token: string}
+
+***** Table Operations
+- table_create: {name: string, rounds: number, token: string}
+- table_join: {tableName: string, token: string}
+- table_start: {tableName: string, token: string}
+- table_leave: {tableName: string, token: string}
+
+***** Game Updates
+- game_update: {gameState: GameState, players: Player[], currentTurn: string}
+- game_action: {type: string, data: any, token: string}
+
+***** Lobby Updates
+- lobby_update: {players: Player[], tables: Table[]}
+
+*** Data Structures
+
+**** Player
+- name: string
+- uuid: string
+- status: "connected" | "disconnected" | "in_game"
+
+**** Table
+- tablename: string
+- players: Player[]
+- rounds: number
+- status: "waiting" | "in_progress" | "completed"
+
+**** LobbyStatus
+- players: Player[]
+- tables: Table[]
+
+*** Error Handling
+- Connection failures
+- Invalid message format
+- Authentication errors
+- Game state conflicts
+- Rate limiting

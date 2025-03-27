@@ -38,9 +38,32 @@ The project aims to provide an accessible, well-documented platform for playing 
 - State logging and replay system
 - Testing framework
 
+** System Architecture
+#+BEGIN_SRC mermaid
+graph TB
+    subgraph Server
+        CoreLogic[Core Logic] --- ServerAdapter[Server Socket Adapter]
+    end
+    
+    subgraph Client
+        ServerAdapter --- ClientAdapter[Client Socket Adapter]
+        ClientAdapter --- TerminalUI[Terminal UI]
+        ClientAdapter --- BrowserUI[Browser UI]
+    end
+
+    style Server fill:#f9f,stroke:#333,stroke-width:4px
+    style Client fill:#bbf,stroke:#333,stroke-width:4px
+    style CoreLogic fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style ServerAdapter fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style ClientAdapter fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style TerminalUI fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style BrowserUI fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+#+END_SRC
+
 * Documentation
 ** Specifications
 - [[frontend_specification.org][Frontend Specification]]: UI implementation details
+- [[network_specification.org][Network Specification]]: WebSocket protocol and data structures
 - [[gameplay_specification.org][Gameplay Specification]]: Game mechanics and rules
 - [[lobby_and_table_creation_specification.org][Lobby and Table Creation]]: Server initialization and table management
 - [[table_creation_specification.org][Table Creation]]: Detailed table setup process
