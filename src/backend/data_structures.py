@@ -1,7 +1,25 @@
 # data_structures.py
 
 from frozendict import frozendict
-from typing import Dict, Tuple, Any, Union, Optional
+from typing import Dict, Tuple, Any, Union, Optional, TypedDict
+
+class PlayerType(TypedDict):
+    session: str
+    name: str
+    type: str
+    uuid: str
+
+class TableType(TypedDict):
+    tablename: str
+    players: Tuple[PlayerType, ...]
+    rounds: Tuple[Dict, ...]
+    status: str
+    num_rounds: int
+    game_dict: Any
+
+class LobbyStatusType(TypedDict):
+    players: Tuple[PlayerType, ...]
+    tables: Tuple[TableType, ...]
 from datetime import datetime
 
 """

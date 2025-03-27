@@ -1,6 +1,7 @@
 # lobby_table_handler.py
 
 from typing import Tuple, Callable, List, Dict, Any
+import random
 from src.backend.data_structures import PlayerType, TableType, LobbyStatusType
 from .game_handler import play_table_rounds
 
@@ -138,14 +139,12 @@ def start_table_pure(status: LobbyStatusType, table: TableType) -> Tuple[LobbySt
     """
     # TODO: Implement player sitting at the table check
     if len(table["players"]) == 4:
-        # First set table to running state
+        # First set table to playing state
         updated_table = {
             **table,
-            "status": "running"
+            "status": "playing",
+            "rounds": []  # Initialize empty rounds list
         }
-        
-        # Play all rounds for the table
-        updated_table = play_table_rounds(updated_table)
         
         # Find the table in the status.tables list and replace it
         updated_tables = []
@@ -171,8 +170,7 @@ def generate_token() -> str:
     Returns:
         str: A unique token
     """
-    # TODO: Implement token generation logic
-    return "token"  # Placeholder token
+    return f"token_{random.randint(10000, 99999)}"
 
 # Module-level cache for the current state
 # This is not a global variable, but a closure that encapsulates the state
@@ -262,7 +260,7 @@ def add_player_to_table(table: TableType, player_name: str) -> bool:
     set_current_state(new_state)
     return success
 
-def start_table(table: TableType) -> bool:
+def start_table(table: TableType) -> TableType:
     """
     Check if player is sitting at the table
     Consistency check: are four players at the table
@@ -274,12 +272,14 @@ def start_table(table: TableType) -> bool:
         table: The table object
         
     Returns:
-        bool: True if the table was started, False otherwise
+        TableType: The updated table if started successfully, or the original table if failed
     """
     current_state = get_current_state()
-    new_state, success, _ = start_table_pure(current_state, table)
-    set_current_state(new_state)
-    return success
+    new_state, success, updated_table = start_table_pure(current_state, table)
+    if success:
+        set_current_state(new_state)
+        return updated_table
+    return table
 
 def get_lobby_status() -> LobbyStatusType:
     """

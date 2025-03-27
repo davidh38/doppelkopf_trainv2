@@ -1,81 +1,129 @@
-* Project Title: Doppelkopf Train v2
+* Doppelkopf Train v2
 
-* Project Description
-This project is a new game inspired by the previous game, focusing on data-driven design and a functional approach. The `tests` folder is for unit tests.
+* Project Overview
+This is a modern implementation of the classic German card game Doppelkopf, focusing on:
+- Data-driven design and functional programming approach
+- Clean architecture with clear boundaries
+- Comprehensive testing and state management
+- Both terminal and web-based user interfaces
+
+The project aims to provide an accessible, well-documented platform for playing Doppelkopf while serving as an example of clean software design principles.
 
 * Key Features
-- Gemini or API flatrates for money saving
-- The logic should be easily explainable
-- Every game state should be fast attainable in an easy way for example: play a last trick and press new game
-- GUI should have no logic at all except for showing, no special routes, everything depends on the game state
-- New features will be implemented by pull requests
-- Unit tests will test the game like in the last game
-- The reuse of the old versions code should be done
-- More functional
-- Data will be the first citizen and the most important
-- Planning before coding
-- A rule file will be maintained with every feature
-- Game state object will be logged and printed after every move
+- Data-centric architecture with state logging
+- Functional programming approach
+- Comprehensive test coverage with reproducible game states
+- Clean separation between UI and game logic
+- Socket.IO integration for real-time gameplay
+- Multiple interface options (terminal, web)
+- Extensive documentation and specifications
 
 * Technology Stack
-Flask, Python, JavaScript
-
-* ADDR
-- [[data_structures.org][Data Structures]]
-- [[frontend_specification.org][Frontend Specification]]
-- [[gameplay_specification.org][Gameplay Specification]]
-- [[lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]]
-
-* Frontend
-- In order to have a more seamless user experience, we will add Socket.IO.
-- There will be 3 main windows:
-  - Lobby for game joining and creation
-  - The gameplay itself
-  - Game summary
-- For identification, JavaScript code will post a UUID with every request.
-
-* Testing
-- For a testing mode, the players can play random but legible cards to a certain point. This can be reproduced.
-- Also, game states should be saved and be able to be started with.
-- For example, a game can be simulated to have run 4 times to the fifth trick. This data structure: user should then be able to connect to the game with the right identification.
-- A game should be replayable by the UI
-
-* Principles
-- Features and design and decisions should be reasons without reasons should have arguments
+- Backend: Python, Flask
+- Frontend: JavaScript, Socket.IO
+- Testing: Python unittest framework
+- Documentation: Org-mode
 
 * Architecture
-- Clean bound boundaries for reuse and flexibility
+** Design Principles
+- Data-first approach: Game state is the single source of truth
+- Clean boundaries: Clear separation between components
+- Functional design: Minimize side effects, maximize testability
+- Documentation-driven development: Specifications guide implementation
+- Test-driven development: Comprehensive test coverage
 
-* Implementation Files
-- src/backend/data_structures.py: Contains the definitions of the core data structures (playerdict, tabledict, gamedict, card_dict)
-- src/backend/table_handler.py: Handles table management operations (creating tables, adding/removing players, etc.)
-- src/backend/game_handler.py: Manages game mechanics and state (card dealing, turn management, card playing logic, etc.)
-- src/backend/game_summary.py: Calculates and generates game summaries (scores, statistics, history recording, etc.)
-- src/backend/game_logger.py: Handles logging of game state after every turn (for debugging, replay, and recovery)
+** Components
+- Backend core (game logic, state management)
+- Frontend interfaces (terminal, web)
+- State logging and replay system
+- Testing framework
 
-* Specification Files
-- [[./frontend_specification.org][Frontend Specification]]
-- [[gameplay_specification.org][Gameplay Specification]]
-- [[lobby_and_table_creation_specification.org][Lobby and Table Creation Specification]]
-- [[table_creation_specification.org][Table Creation Specification]]
+* Documentation
+** Specifications
+- [[frontend_specification.org][Frontend Specification]]: UI implementation details
+- [[gameplay_specification.org][Gameplay Specification]]: Game mechanics and rules
+- [[lobby_and_table_creation_specification.org][Lobby and Table Creation]]: Server initialization and table management
+- [[table_creation_specification.org][Table Creation]]: Detailed table setup process
+- [[data_structures.org][Data Structures]]: Core data structure definitions
 
-* Gameplay
-- See [[./gameplay_specification.org][Gameplay Specification]] for detailed gameplay mechanics and rules
+* Implementation
+** Backend Components
+- src/backend/data_structures.py: Core data structure definitions
+- src/backend/table_handler.py: Table management operations
+- src/backend/game_handler.py: Game mechanics and state management
+- src/backend/game_summary.py: Score calculation and game summary
+- src/backend/game_logger.py: State logging and replay functionality
 
-* Data Structures
-- See [[data_structures.org][Data Structures]] for details on the data structures used in the game.
+** Frontend Components
+- Terminal interface for direct gameplay
+- Web interface with Socket.IO for real-time updates
+- Three main views:
+  1. Lobby (game joining and creation)
+  2. Gameplay interface
+  3. Game summary view
 
-* Logging
-- The game state will be logged after every turn
-- Logging will capture the complete gamedict at each step
-- This will enable:
-  - Debugging of game mechanics
-  - Replay of games for analysis
-  - Recovery in case of errors or disconnections
-- Implementation details:
-  - A new file src/backend/game_logger.py will handle logging functionality
-  - Logs will be stored in a structured format (JSON)
-  - Each game will have its own log file with timestamp and game ID
-  - Log files will be stored in a logs/ directory
-- The logging system will be designed to have minimal impact on performance
-- Logs can be used to recreate any point in the game's history
+* Testing
+** Framework
+- Comprehensive unit test suite
+- Reproducible game state testing
+- Random but legal card play simulation
+- State snapshot testing
+
+** Features
+- Save and load game states
+- Simulate partial games (e.g., play to specific trick)
+- Replay functionality for analysis
+- Test specific game scenarios
+
+* Logging System
+** Purpose
+- Debug game mechanics
+- Enable game replay and analysis
+- Provide error recovery
+- Support game state recreation
+
+** Implementation
+- JSON-formatted log files
+- Per-game logging with timestamps
+- Complete state capture after each action
+- Minimal performance impact
+- Stored in logs/ directory
+
+* Getting Started
+** Running the Program
+1. Create and activate a virtual environment:
+   #+BEGIN_SRC bash
+   # Create virtual environment
+   python3 -m venv venv
+   #+END_SRC
+
+   # Activate virtual environment:
+   #+BEGIN_SRC bash
+   source venv/bin/activate  # On macOS/Linux
+   # or
+   .\venv\Scripts\activate  # On Windows
+   #+END_SRC
+
+2. Install required packages:
+   #+BEGIN_SRC bash
+   # Core dependencies
+   pip3 install frozendict flask python-socketio
+
+   # For development/testing
+   pip3 install pytest
+   #+END_SRC
+
+3. Run the program:
+   #+BEGIN_SRC bash
+   # From the project root directory:
+   PYTHONPATH=$PWD python3 src/main.py
+   # or
+   python3 -m src.main
+   #+END_SRC
+
+* Development Process
+- Feature implementation via pull requests
+- Specification updates with each feature
+- Comprehensive testing requirements
+- Code reuse from previous version where appropriate
+- Clear documentation of design decisions
