@@ -1,6 +1,6 @@
 import pytest
 from typing import Dict, List, Tuple
-from src.backend.lobby_table_handler import (
+from src.services.lobby_table_handler import (
     login_player,
     create_table,
     add_player_to_table,
@@ -8,7 +8,7 @@ from src.backend.lobby_table_handler import (
     reset_lobby_status,
     start_table
 )
-from src.backend.game_handler import gameflow
+from src.services.game_handler import gameflow
 
 def test_complete_two_round_game():
     """

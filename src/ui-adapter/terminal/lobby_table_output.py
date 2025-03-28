@@ -1,16 +1,16 @@
-# src/frontend/terminal/lobby_table_output.py
+# src/ui-adapter/terminal/lobby_table_output.py
 
 from typing import Tuple, Optional, List, NoReturn, Dict, Any
-from src.backend.lobby_table_handler import get_lobby_status, login_player, create_table, add_player_to_table, start_table
-from src.backend.data_structures import TableType, PlayerType
+from src.services.lobby_table_handler import get_lobby_status, login_player, create_table, add_player_to_table, start_table
+from src.services.data_structures import TableType, PlayerType
 from .game_output import run_game_interface
 
-def run_terminal_frontend() -> NoReturn:
+def run_terminal_ui_adapter() -> NoReturn:
     """
-    Public API: Run the terminal frontend.
+    Public API: Run the terminal UI adapter.
     This is the only public function that should be called from outside.
     """
-    print("Terminal frontend selected")
+    print("Terminal UI adapter selected")
     
     token = None
     while True:

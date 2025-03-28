@@ -1,7 +1,7 @@
-# src/frontend/terminal/game_output.py
+# src/ui-adapter/terminal/game_output.py
 
 from typing import Dict, List, Tuple, Optional, NoReturn
-from src.backend.game_handler import (
+from src.services.game_handler import (
     play_table_rounds, create_initial_game_state,
     gameflow, initialize_game, handle_variant_phase,
     play_all_tricks, finalize_game

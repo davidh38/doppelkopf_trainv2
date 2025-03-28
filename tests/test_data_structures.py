@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from src.backend.data_structures import (
+from src.services.data_structures import (
     create_player,
     create_card,
     create_announcement,

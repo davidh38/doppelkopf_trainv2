@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
-from src.backend.game_handler import gameflow
-from src.backend.data_structures import create_player, create_table
+from src.services.game_handler import gameflow
+from src.services.data_structures import create_player, create_table
 
 def test_gameflow_initialization():
     """Test that gameflow properly initializes a new game"""
