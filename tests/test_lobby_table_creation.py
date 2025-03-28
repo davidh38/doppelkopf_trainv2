@@ -1,5 +1,5 @@
 import pytest
-from src.backend.lobby_table_handler import (
+from src.services.lobby_table_handler import (
     connect_player,
     login_player,
     create_table,
@@ -7,7 +7,7 @@ from src.backend.lobby_table_handler import (
     get_lobby_status,
     reset_lobby_status
 )
-from src.backend.data_structures import Player, Table
+from src.services.data_structures import Player, Table
 
 
 def test_lobby_table_creation():
