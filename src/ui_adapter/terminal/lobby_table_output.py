@@ -21,12 +21,16 @@ def set_lobby_state(state: Dict) -> None:
     global _current_lobby
     _current_lobby = state.copy()  # Make a copy to ensure state isolation
 
-async def run_terminal_ui_adapter(websocket_client: Any) -> NoReturn:
+async def run_terminal_ui_adapter(websocket_client: Any, initial_token: Optional[str] = None) -> NoReturn:
     """
     Public API: Run the terminal UI adapter.
     This is the only public function that should be called from outside.
+    
+    Args:
+        websocket_client: WebSocket client instance
+        initial_token: Optional initial player token
     """
-    token = None
+    token = initial_token
     while True:
         # Get current state and render screen
         lobby_status = get_lobby_state()
@@ -157,6 +161,11 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                 print("\nConnecting...")
                 # Wait a moment for the connection response and lobby update
                 await asyncio.sleep(0.5)
+                # Find player in updated lobby state to get token
+                current_state = get_lobby_state()
+                player = next((p for p in current_state["players"] if isinstance(p, dict) and p["name"] == args), None)
+                if player:
+                    token = player["uuid"]
             return False, token
         
         elif command == "1" and token:  # Create table
