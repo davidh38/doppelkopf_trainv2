@@ -181,13 +181,14 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                     if rounds <= 0:
                         print("\nError: Number of rounds must be positive")
                     else:
-                        current_state = get_lobby_state()
-                        result = create_table(current_state, table_name, rounds)
-                        if result[0]:  # success
-                            new_state, table = result[1]
-                            print(f"\nCreated table: {table['tablename']} with {rounds} rounds")
-                        else:
-                            print(f"\nError: {result[2]}")  # error message
+                        from socket_adapter.client_adapter import send_message
+                        await send_message(websocket_client, 'create_table', {
+                            'name': table_name,
+                            'rounds': rounds
+                        })
+                        print("\nCreating table...")
+                        # Wait a moment for the server to process and broadcast
+                        await asyncio.sleep(0.5)
             except ValueError:
                 print("\nError: Number of rounds must be a valid positive number")
                 print("Example: 1 mytable 3")
@@ -200,12 +201,14 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
             else:
                 table = next((t for t in lobby_status["tables"] if t["tablename"].lower() == args.lower()), None)
                 if table:
-                    current_state = get_lobby_state()
-                    result = add_player_to_table(current_state, table, token)
-                    if result[0]:  # success
-                        print(f"\nJoined table: {table['tablename']}")
-                    else:
-                        print(f"\nError: {result[2]}")  # error message
+                    from socket_adapter.client_adapter import send_message
+                    await send_message(websocket_client, 'join_table', {
+                        'table_name': table["tablename"],
+                        'player_token': token
+                    })
+                    print("\nJoining table...")
+                    # Wait a moment for the server to process and broadcast
+                    await asyncio.sleep(0.5)
                 else:
                     print(f"\nError: Table '{args}' not found")
             input("Press Enter to continue...")
@@ -217,14 +220,13 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
             else:
                 table = next((t for t in lobby_status["tables"] if t["tablename"].lower() == args.lower()), None)
                 if table:
-                    current_state = get_lobby_state()
-                    result = start_table(current_state, table)
-                    if result[0]:  # success
-                        new_state, _, updated_table = result[1]
-                        print(f"\nStarted table: {updated_table['tablename']}")
-                        run_game_interface(updated_table, token)
-                    else:
-                        print(f"\nError: {result[2]}")  # error message
+                    from socket_adapter.client_adapter import send_message
+                    await send_message(websocket_client, 'start_table', {
+                        'table_name': table["tablename"]
+                    })
+                    print("\nStarting table...")
+                    # Wait a moment for the server to process and broadcast
+                    await asyncio.sleep(0.5)
                 else:
                     print(f"\nError: Table '{args}' not found")
             input("Press Enter to continue...")
