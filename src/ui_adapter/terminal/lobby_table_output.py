@@ -188,11 +188,11 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                             'rounds': rounds
                         })
                         print("\nCreating table...")
-                        # Wait a moment for the server to process and broadcast
-                        await asyncio.sleep(0.5)
             except ValueError:
                 print("\nError: Number of rounds must be a valid positive number")
                 print("Example: 1 mytable 3")
+            # Wait a moment for the server to process and broadcast
+            await asyncio.sleep(0.5)
             input("Press Enter to continue...")
             return False, token
         
@@ -208,10 +208,10 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                         'player_token': token
                     })
                     print("\nJoining table...")
-                    # Wait a moment for the server to process and broadcast
-                    await asyncio.sleep(0.5)
                 else:
                     print(f"\nError: Table '{args}' not found")
+            # Wait a moment for the server to process and broadcast
+            await asyncio.sleep(0.5)
             input("Press Enter to continue...")
             return False, token
         
@@ -226,10 +226,10 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                         'table_name': table["tablename"]
                     })
                     print("\nStarting table...")
-                    # Wait a moment for the server to process and broadcast
-                    await asyncio.sleep(0.5)
                 else:
                     print(f"\nError: Table '{args}' not found")
+            # Wait a moment for the server to process and broadcast
+            await asyncio.sleep(0.5)
             input("Press Enter to continue...")
             return False, token
         
