@@ -81,7 +81,7 @@ def _output_lobby(lobby_list: List[PlayerType]) -> None:
     lobby_status = get_lobby_state()
     print("Lobby:")
     print("  Players:")
-    for player in lobby_list:
+    for player in lobby_status["players"]:
         if isinstance(player, dict):
             print(f"    - {_format_player(player)}")
         else:
@@ -90,7 +90,7 @@ def _output_lobby(lobby_list: List[PlayerType]) -> None:
     for table in lobby_status["tables"]:
         player_names = []
         for player_token in table["players"]:
-            player = next((p for p in lobby_list if isinstance(p, dict) and p["uuid"] == player_token), None)
+            player = next((p for p in lobby_status["players"] if isinstance(p, dict) and p["uuid"] == player_token), None)
             if player:
                 player_names.append(_format_player(player))
             else:
@@ -108,7 +108,7 @@ def _render_screen(lobby_list: List[PlayerType], token: Optional[str] = None) ->
     Render the current screen and get user input.
     
     Args:
-        lobby_list: List of players in the lobby
+        lobby_list: List of players in the lobby (unused, using get_lobby_state instead)
         token: Optional current player's token
         
     Returns:
@@ -118,10 +118,11 @@ def _render_screen(lobby_list: List[PlayerType], token: Optional[str] = None) ->
             - token is the player's token (None if not connected)
     """
     _clear_screen()
-    _output_lobby(lobby_list)
+    lobby_status = get_lobby_state()
+    _output_lobby(lobby_status["players"])
     
     if token:
-        player = next((p for p in lobby_list if isinstance(p, dict) and p["uuid"] == token), None)
+        player = next((p for p in lobby_status["players"] if isinstance(p, dict) and p["uuid"] == token), None)
         if player:
             print(f"\nConnected as: {_format_player(player)}")
     
@@ -240,6 +241,7 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
             from socket_adapter.client_adapter import send_message
             await send_message(websocket_client, 'get_lobby_status', {})
             print("\nRefreshing lobby status...")
+            await asyncio.sleep(0.5)  # Wait for response
             input("Press Enter to continue...")
             return False, token
         

@@ -44,10 +44,7 @@ def create_message_handlers(state: ClientState, set_state: Callable[[ClientState
         logger.debug("Entering handle_lobby_update")
         logger.debug(f"Lobby update payload: {payload}")
         set_lobby_state(payload)
-        # Force UI refresh after state update
-        from socket_adapter.client_adapter import send_message
-        asyncio.create_task(send_message(websocket_client, 'get_lobby_status', {}))
-        logger.debug("State updated and refresh requested")
+        logger.debug("State updated")
 
     def handle_player_connected(payload: Dict[str, Any]) -> None:
         """Handle player connected response."""

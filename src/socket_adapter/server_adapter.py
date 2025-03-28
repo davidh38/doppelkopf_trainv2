@@ -57,15 +57,24 @@ async def broadcast_message(server: Server, msg_type: str, payload: dict) -> Non
     })
     
     # Send to all connected clients
+    failed_clients = set()
     for client in server['clients'].copy():
         try:
             await client[0].send(message)
         except websockets.exceptions.WebSocketException:
-            server['clients'].remove(client)
+            failed_clients.add(client)
             try:
                 await client[0].close()
             except websockets.exceptions.WebSocketException:
                 pass
+
+    # Remove failed clients after iteration
+    for client in failed_clients:
+        try:
+            server['clients'].remove(client)
+        except KeyError:
+            # Client was already removed
+            pass
 
 # Server-side lobby state
 _server_lobby = create_empty_lobby()
