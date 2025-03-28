@@ -42,22 +42,53 @@ The project aims to provide an accessible, well-documented platform for playing 
 #+BEGIN_SRC mermaid
 graph TB
     subgraph Server
-        CoreLogic[Core Logic] --- ServerAdapter[Server Socket Adapter]
+        CoreLogic[Core Logic]
+        
+        subgraph Wiring Layer
+            ServiceWiring[Service Wiring]
+            ServerWiring[Server Socket Wiring]
+            DBWiring[Database Wiring]
+            
+            ServiceWiring --- ServerWiring
+            ServiceWiring --- DBWiring
+        end
+        
+        subgraph Adapters
+            ServerAdapter[Server Socket Adapter]
+            DBAdapter[Database Adapter]
+        end
+        
+        CoreLogic --- ServiceWiring
+        ServerWiring --- ServerAdapter
+        DBWiring --- DBAdapter
     end
     
     subgraph Client
+        subgraph Client Wiring
+            ClientWiring[Client Socket Wiring]
+        end
+        
         ServerAdapter --- ClientAdapter[Client Socket Adapter]
-        ClientAdapter --- TerminalUI[Terminal UI]
-        ClientAdapter --- BrowserUI[Browser UI]
+        ClientAdapter --- ClientWiring
+        ClientWiring --- TerminalUI[Terminal UI]
+        ClientWiring --- BrowserUI[Browser UI]
     end
 
     style Server fill:#f9f,stroke:#333,stroke-width:4px
     style Client fill:#bbf,stroke:#333,stroke-width:4px
+    style Wiring Layer fill:#ffd,stroke:#333,stroke-width:2px
+    style Client Wiring fill:#ffd,stroke:#333,stroke-width:2px
+    style Adapters fill:#eff,stroke:#333,stroke-width:2px
     style CoreLogic fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style ServiceWiring fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style ServerWiring fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style DBWiring fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
     style ServerAdapter fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
     style ClientAdapter fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style ClientWiring fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
     style TerminalUI fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
     style BrowserUI fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
+    style DBAdapter fill:#fff,stroke:#333,stroke-width:2px,font-size:18px,color:#000
 #+END_SRC
 
 * Documentation
@@ -138,11 +169,18 @@ graph TB
 
 3. Run the program:
    #+BEGIN_SRC bash
-   # From the project root directory:
-   PYTHONPATH=$PWD python3 src/main.py
-   # or
-   python3 -m src.main
+   # Start the server (in one terminal):
+   PYTHONPATH=$PWD python3 src/server.py
+
+   # Start a client (in another terminal):
+   PYTHONPATH=$PWD python3 src/client.py
    #+END_SRC
+
+   The server will start both game and lobby services. The client provides a terminal interface for:
+   - Setting your player name
+   - Creating game tables
+   - Joining existing tables
+   - Playing the game
 
 * Development Process
 - Feature implementation via pull requests
