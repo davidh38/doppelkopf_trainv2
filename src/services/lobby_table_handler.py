@@ -1,58 +1,50 @@
 # lobby_table_handler.py
 
-from typing import Tuple, Callable, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Callable, Optional, Union
 import random
-from src.backend.data_structures import PlayerType, TableType, LobbyStatusType
 from .game_handler import play_table_rounds
 
+# Type aliases
+PlayerType = Dict[str, str]
+TableType = Dict[str, Any]
+LobbyStatusType = Dict[str, List]
+Result = Tuple[bool, Optional[Any], Optional[str]]  # (success, value, error)
+
+# Pure functions for state management
+
 def create_empty_lobby() -> LobbyStatusType:
-    """
-    Create an empty lobby status.
-    
-    Returns:
-        LobbyStatusType: A new empty lobby status
-    """
+    """Create an empty lobby status."""
     return {
         "players": [],
         "tables": []
     }
 
-# Pure functions that don't use global state
-# These are the core functions that implement the business logic
+def create_result(success: bool, value: Any = None, error: str = None) -> Result:
+    """Create result tuple."""
+    return (success, value, error)
 
-def connect_player_pure(status: LobbyStatusType, token: str) -> Tuple[LobbyStatusType, bool]:
-    """
-    Pure function version of connect_player that doesn't use global variables.
+def connect_player(status: LobbyStatusType, token: str) -> Result:
+    """Add player to lobby status players list."""
+    if not token:
+        return create_result(False, error="Token is required")
     
-    Args:
-        status: The current lobby status
-        token: The player's token
-        
-    Returns:
-        tuple: (new_status, success_flag)
-    """
-    # TODO: Implement token validation
-    if token:
-        return {
-            "players": status["players"] + [token],
-            "tables": status["tables"]
-        }, True
-    else:
-        return status, False
+    new_status = {
+        "players": status["players"] + [token],
+        "tables": status["tables"]
+    }
+    return create_result(True, new_status)
 
-def login_player_pure(status: LobbyStatusType, name: str) -> Tuple[LobbyStatusType, PlayerType]:
-    """
-    Pure function version of login_player that doesn't use global variables.
+def login_player(status: LobbyStatusType, name: str) -> Result:
+    """Create new player and add to lobby."""
+    if not name:
+        return create_result(False, error="Player name is required")
     
-    Args:
-        status: The current lobby status
-        name: The player's name
-        
-    Returns:
-        tuple: (new_status, player)
-    """
-    # TODO: Implement name uniqueness check
-    token = generate_token()  # Implement token generation
+    # Check if player with same name exists
+    for player in status["players"]:
+        if isinstance(player, dict) and player["name"] == name:
+            return create_result(False, error="Player name already exists")
+    
+    token = f"token_{random.randint(10000, 99999)}"
     player = {
         "session": "",
         "name": name,
@@ -63,20 +55,17 @@ def login_player_pure(status: LobbyStatusType, name: str) -> Tuple[LobbyStatusTy
         "players": status["players"] + [player],
         "tables": status["tables"]
     }
-    return new_status, player
+    print(f"Created player: {player}")  # Debug print
+    print(f"New lobby status: {new_status}")  # Debug print
+    return create_result(True, (new_status, player))
 
-def create_table_pure(status: LobbyStatusType, name: str, rounds: int) -> Tuple[LobbyStatusType, TableType]:
-    """
-    Pure function version of create_table that doesn't use global variables.
+def create_table(status: LobbyStatusType, name: str, rounds: int) -> Result:
+    """Create new table and add to lobby."""
+    if not name:
+        return create_result(False, error="Table name is required")
+    if rounds <= 0:
+        return create_result(False, error="Number of rounds must be positive")
     
-    Args:
-        status: The current lobby status
-        name: The table name
-        rounds: Number of rounds
-        
-    Returns:
-        tuple: (new_status, table)
-    """
     table = {
         "tablename": name,
         "players": [],
@@ -89,214 +78,87 @@ def create_table_pure(status: LobbyStatusType, name: str, rounds: int) -> Tuple[
         "players": status["players"],
         "tables": status["tables"] + [table]
     }
-    return new_status, table
+    return create_result(True, (new_status, table))
 
-def add_player_to_table_pure(status: LobbyStatusType, table: TableType, player_name: str) -> Tuple[LobbyStatusType, bool, TableType]:
-    """
-    Pure function version of add_player_to_table that doesn't use global variables.
+def add_player_to_table(status: LobbyStatusType, table: TableType, player_name: str) -> Result:
+    """Add player to table if space available."""
+    if len(table["players"]) >= 4:
+        return create_result(False, error="Table is full")
     
-    Args:
-        status: The current lobby status
-        table: The table object
-        player_name: The player's name
-        
-    Returns:
-        tuple: (new_status, success_flag, updated_table)
-    """
-    if len(table["players"]) < 4:
-        updated_table = {
-            **table,
-            "players": table["players"] + [player_name]
-        }
-        
-        # Find the table in the status.tables list and replace it
-        updated_tables = []
-        for t in status["tables"]:
-            if t["tablename"] == table["tablename"]:
-                updated_tables.append(updated_table)
-            else:
-                updated_tables.append(t)
-        
-        new_status = {
-            "players": status["players"],
-            "tables": updated_tables
-        }
-        
-        return new_status, True, updated_table
-    else:
-        return status, False, table
+    updated_table = {
+        **table,
+        "players": table["players"] + [player_name]
+    }
+    
+    updated_tables = [
+        updated_table if t["tablename"] == table["tablename"] else t
+        for t in status["tables"]
+    ]
+    
+    new_status = {
+        "players": status["players"],
+        "tables": updated_tables
+    }
+    
+    return create_result(True, (new_status, True, updated_table))
 
-def start_table_pure(status: LobbyStatusType, table: TableType) -> Tuple[LobbyStatusType, bool, TableType]:
-    """
-    Pure function version of start_table that doesn't use global variables.
+def start_table(status: LobbyStatusType, table: TableType) -> Result:
+    """Start table if requirements met."""
+    if len(table["players"]) != 4:
+        return create_result(False, error="Table must have exactly 4 players")
     
-    Args:
-        status: The current lobby status
-        table: The table object
-        
-    Returns:
-        tuple: (new_status, success_flag, updated_table)
-    """
-    # TODO: Implement player sitting at the table check
-    if len(table["players"]) == 4:
-        # First set table to playing state
-        updated_table = {
-            **table,
-            "status": "playing",
-            "rounds": []  # Initialize empty rounds list
-        }
-        
-        # Find the table in the status.tables list and replace it
-        updated_tables = []
-        for t in status["tables"]:
-            if t["tablename"] == table["tablename"]:
-                updated_tables.append(updated_table)
-            else:
-                updated_tables.append(t)
-        
-        new_status = {
-            "players": status["players"],
-            "tables": updated_tables
-        }
-        
-        return new_status, True, updated_table
-    else:
-        return status, False, table
+    updated_table = {
+        **table,
+        "status": "playing",
+        "rounds": []
+    }
+    
+    updated_tables = [
+        updated_table if t["tablename"] == table["tablename"] else t
+        for t in status["tables"]
+    ]
+    
+    new_status = {
+        "players": status["players"],
+        "tables": updated_tables
+    }
+    
+    return create_result(True, (new_status, True, updated_table))
 
-def generate_token() -> str:
-    """
-    Generate a unique token for the player
-    
-    Returns:
-        str: A unique token
-    """
-    return f"token_{random.randint(10000, 99999)}"
+# Public API
 
-# Module-level cache for the current state
-# This is not a global variable, but a closure that encapsulates the state
-def create_state_cache() -> Tuple[Callable[[], LobbyStatusType], Callable[[LobbyStatusType], None]]:
-    state = create_empty_lobby()
-    
-    def get_state() -> LobbyStatusType:
-        nonlocal state
-        return state
-    
-    def set_state(new_state: LobbyStatusType) -> None:
-        nonlocal state
-        state = new_state
-    
-    return get_state, set_state
+def handle_connect_player(state: LobbyStatusType, token: str) -> Result:
+    """Connect player to lobby."""
+    return connect_player(state, token)
 
-# Create the state getters and setters
-get_current_state, set_current_state = create_state_cache()
+def handle_login_player(state: LobbyStatusType, name: str) -> Result:
+    """Login new player to lobby."""
+    result = login_player(state, name)
+    if result[0]:  # success
+        new_state, player = result[1]
+        return create_result(True, (new_state, player))
+    return result
 
-# Public API functions that use the pure functions
-def connect_player(token: str) -> bool:
-    """
-    If token valid, add player to lobby status players list
-    Else: tell the player to login
-    
-    Args:
-        token: The player's token
-        
-    Returns:
-        bool: True if the player was connected, False otherwise
-    """
-    current_state = get_current_state()
-    new_state, success = connect_player_pure(current_state, token)
-    set_current_state(new_state)
-    return success
+def handle_create_table(state: LobbyStatusType, name: str, rounds: int) -> Result:
+    """Create new table in lobby."""
+    result = create_table(state, name, rounds)
+    if result[0]:  # success
+        new_state, table = result[1]
+        return create_result(True, (new_state, table))
+    return result
 
-def login_player(name: str) -> PlayerType:
-    """
-    Consistency check, whether name is unique
-    Create token for player
-    Create dict for player
-    Add player to lobby status players list
-    
-    Args:
-        name: The player's name
-        
-    Returns:
-        PlayerType: The created player object
-    """
-    current_state = get_current_state()
-    new_state, player = login_player_pure(current_state, name)
-    set_current_state(new_state)
-    return player
+def handle_add_player_to_table(state: LobbyStatusType, table: TableType, player_name: str) -> Result:
+    """Add player to existing table."""
+    result = add_player_to_table(state, table, player_name)
+    if result[0]:  # success
+        new_state, _, updated_table = result[1]
+        return create_result(True, (new_state, updated_table))
+    return result
 
-def create_table(name: str, rounds: int) -> TableType:
-    """
-    Create table dict
-    change status to open
-    Add table to lobby status tables list
-    
-    Args:
-        name: The table name
-        rounds: Number of rounds
-        
-    Returns:
-        TableType: The created table object
-    """
-    current_state = get_current_state()
-    new_state, table = create_table_pure(current_state, name, rounds)
-    set_current_state(new_state)
-    return table
-
-def add_player_to_table(table: TableType, player_name: str) -> bool:
-    """
-    Check for max of 4 players
-    Else: add player to table and update the table in lobby status
-    
-    Args:
-        table: The table object
-        player_name: The player's name
-        
-    Returns:
-        bool: True if the player was added, False otherwise
-    """
-    current_state = get_current_state()
-    new_state, success, _ = add_player_to_table_pure(current_state, table, player_name)
-    set_current_state(new_state)
-    return success
-
-def start_table(table: TableType) -> TableType:
-    """
-    Check if player is sitting at the table
-    Consistency check: are four players at the table
-    Change mode to running mode
-    Assign a game_dict to the table
-    Call init_game function -> todo
-    
-    Args:
-        table: The table object
-        
-    Returns:
-        TableType: The updated table if started successfully, or the original table if failed
-    """
-    current_state = get_current_state()
-    new_state, success, updated_table = start_table_pure(current_state, table)
-    if success:
-        set_current_state(new_state)
-        return updated_table
-    return table
-
-def get_lobby_status() -> LobbyStatusType:
-    """
-    Return the current lobby status
-    
-    Returns:
-        LobbyStatusType: The current lobby status
-    """
-    return get_current_state()
-
-def reset_lobby_status() -> LobbyStatusType:
-    """
-    Reset the lobby status for testing purposes.
-    
-    Returns:
-        LobbyStatusType: A new empty lobby status
-    """
-    new_state = create_empty_lobby()
-    set_current_state(new_state)
-    return new_state
+def handle_start_table(state: LobbyStatusType, table: TableType) -> Result:
+    """Start table if requirements met."""
+    result = start_table(state, table)
+    if result[0]:  # success
+        new_state, _, updated_table = result[1]
+        return create_result(True, (new_state, updated_table))
+    return result

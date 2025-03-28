@@ -3,8 +3,8 @@
 from typing import Dict, List, Tuple, Optional, NoReturn
 from .lobby_table_output import run_terminal_frontend
 from .game_output import run_game_interface
-from src.services.data_structures import TableType, PlayerType
-from src.services.lobby_table_handler import get_lobby_status
+from services.data_structures import TableType, PlayerType
+from services.lobby_table_handler import get_lobby_status
 
 class TerminalInterface:
     """

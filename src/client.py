@@ -95,9 +95,9 @@ async def run_client() -> NoReturn:
         # Give message handler a chance to initialize
         await asyncio.sleep(0.1)
 
-        # Start terminal UI with WebSocket client
+        # Start terminal UI with WebSocket client and token
         ui_task = asyncio.create_task(
-            run_terminal_ui_adapter(client)
+            run_terminal_ui_adapter(client, state["token"])
         )
 
         # Wait for both tasks to complete

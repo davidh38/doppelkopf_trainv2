@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 Socket server wiring module.
-Provides factory functions for creating pre-configured socket servers.
+Provides factory functions for creating pre-configured socket server.
 """
 from typing import Dict, Any, Callable
 import json
 from datetime import datetime
-from ..socket_adapter.server_adapter import create_server, start_server, stop_server, broadcast_message
+from ..socket_adapter.server_adapter import create_server as create_socket_server, start_server, stop_server, broadcast_message
 
 # Type aliases
 Server = Dict[str, Any]
@@ -21,9 +21,9 @@ def create_game_state() -> GameState:
         'completed': False
     }
 
-async def create_game_server(port: int) -> Server:
+async def create_server(port: int) -> Server:
     """
-    Create and configure socket server for game handling.
+    Create and configure WebSocket server for game and lobby handling.
     
     Args:
         port: Port number to listen on
@@ -31,8 +31,12 @@ async def create_game_server(port: int) -> Server:
     Returns:
         Configured server state
     """
-    server = await create_server(port)
+    server = await create_socket_server(port)
     game_state = create_game_state()
+    lobby_state = {
+        'tables': [],
+        'players': []
+    }
     
     async def handle_player_connect(server: Server, client: dict, payload: dict) -> None:
         """Handle player connection."""
@@ -67,31 +71,7 @@ async def create_game_server(port: int) -> Server:
             'player': player,
             'action': action
         })
-    
-    # Add message handlers to server
-    server['handlers'] = {
-        'player_connect': handle_player_connect,
-        'player_action': handle_player_action
-    }
-    
-    return server
 
-async def create_lobby_server(port: int) -> Server:
-    """
-    Create socket server configured for lobby management.
-    
-    Args:
-        port: Port number to listen on
-        
-    Returns:
-        Configured server state
-    """
-    server = await create_server(port)
-    lobby_state = {
-        'tables': [],
-        'players': []
-    }
-    
     async def handle_table_create(server: Server, client: dict, payload: dict) -> None:
         """Handle table creation requests."""
         table_name = payload.get('name', '')
@@ -152,6 +132,8 @@ async def create_lobby_server(port: int) -> Server:
     
     # Add message handlers to server
     server['handlers'] = {
+        'player_connect': handle_player_connect,
+        'player_action': handle_player_action,
         'table_create': handle_table_create,
         'player_join': handle_player_join
     }
