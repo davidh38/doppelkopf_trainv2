@@ -1,136 +1,133 @@
+#!/usr/bin/env python3
 """
 Client entry point.
-Terminal-based client for connecting to game server.
+Connects to the WebSocket server and handles game/lobby interactions.
 """
 import asyncio
-import json
-from typing import NoReturn, Dict, Any, Optional
-from src.config import get_client_config
-from src.wiring.socket_client_wiring import create_lobby_socket_client, create_game_socket_client
+import logging
+import sys
+from typing import NoReturn, Dict, Any, Optional, TypedDict, Callable
+from config import get_client_config
+from socket_adapter.client_adapter import connect, disconnect, send_message, start_message_handler
+from ui_adapter.terminal.lobby_table_output import run_terminal_ui_adapter
+from ui_adapter.terminal.lobby_table_output import get_lobby_state, set_lobby_state
 
-# Type aliases
-Connection = Dict[str, Any]
+# Set up logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stderr),
+        logging.FileHandler('client.log')
+    ]
+)
+logger = logging.getLogger('client')
 
-class TerminalClient:
-    def __init__(self):
-        self.config = get_client_config()
-        self.lobby_connection: Optional[Connection] = None
-        self.game_connection: Optional[Connection] = None
-        self.player_name: Optional[str] = None
-        self.current_table: Optional[str] = None
-    
-    async def connect_to_lobby(self) -> None:
-        """Connect to lobby server."""
-        url = f"ws://{self.config['server_host']}:{self.config['lobby_port']}"
-        self.lobby_connection = await create_lobby_socket_client(url)
-        print("Connected to lobby server")
-    
-    async def connect_to_game(self, table_name: str) -> None:
-        """Connect to game server for specific table."""
-        url = f"ws://{self.config['server_host']}:{self.config['game_port']}"
-        self.game_connection = await create_game_socket_client(url)
-        self.current_table = table_name
-        print(f"Connected to game server for table: {table_name}")
-    
-    async def handle_command(self, command: str) -> bool:
-        """
-        Handle user command.
-        Returns False if client should exit, True otherwise.
-        """
-        parts = command.strip().split()
-        if not parts:
-            return True
-            
-        cmd = parts[0].lower()
-        args = parts[1:]
-        
-        if cmd == "quit":
-            return False
-            
-        elif cmd == "help":
-            self.print_help()
-            
-        elif cmd == "name":
-            if len(args) != 1:
-                print("Usage: name <player_name>")
-                return True
-            self.player_name = args[0]
-            print(f"Set player name to: {self.player_name}")
-            
-        elif cmd == "create":
-            if not self.player_name:
-                print("Please set your name first using: name <player_name>")
-                return True
-            if len(args) != 1:
-                print("Usage: create <table_name>")
-                return True
-                
-            await self.lobby_connection.send_message("table_create", {
-                "name": args[0],
-                "creator": self.player_name
-            })
-            print(f"Created table: {args[0]}")
-            
-        elif cmd == "join":
-            if not self.player_name:
-                print("Please set your name first using: name <player_name>")
-                return True
-            if len(args) != 1:
-                print("Usage: join <table_name>")
-                return True
-                
-            # Join table in lobby
-            await self.lobby_connection.send_message("player_join", {
-                "player": self.player_name,
-                "table": args[0]
-            })
-            
-            # Connect to game server for this table
-            await self.connect_to_game(args[0])
-            
-        elif cmd == "list":
-            await self.lobby_connection.send_message("list_tables", {})
-            
-        else:
-            print(f"Unknown command: {cmd}")
-            self.print_help()
-            
-        return True
-    
-    def print_help(self) -> None:
-        """Print available commands."""
-        print("\nAvailable commands:")
-        print("  name <player_name>  - Set your player name")
-        print("  create <table_name> - Create a new game table")
-        print("  join <table_name>   - Join an existing table")
-        print("  list               - List available tables")
-        print("  help               - Show this help message")
-        print("  quit               - Exit the client\n")
+# Type definitions
+class ClientState(TypedDict):
+    token: Optional[str]
+
+# Pure functions for state management
+def create_client_state() -> ClientState:
+    """Create initial client state."""
+    return {"token": None}
+
+def update_token(state: ClientState, token: str) -> ClientState:
+    """Update token in client state."""
+    return {**state, "token": token}
+
+# Message handlers
+def create_message_handlers(state: ClientState, set_state: Callable[[ClientState], None], websocket_client: Any) -> Dict[str, Any]:
+    """Create message handler functions."""
+    def handle_lobby_update(payload: Dict[str, Any]) -> None:
+        """Update local lobby state."""
+        logger.debug("Entering handle_lobby_update")
+        logger.debug(f"Lobby update payload: {payload}")
+        set_lobby_state(payload)
+        logger.debug("State updated")
+
+    def handle_player_connected(payload: Dict[str, Any]) -> None:
+        """Handle player connected response."""
+        token = payload.get('token')
+        if token:
+            # Update client state with token
+            new_state = update_token(state, token)
+            set_state(new_state)
+            logger.debug(f"Updated client state with token: {token}")
+            # Request lobby refresh immediately after getting token
+            asyncio.create_task(send_message(websocket_client, 'get_lobby_status', {}))
+
+    return {
+        'lobby_update': handle_lobby_update,
+        'player_connected': handle_player_connected,
+        'error': lambda data: print(f"\nServer error: {data.get('message', 'Unknown error')}")
+    }
+
+# Main client logic
 
 async def run_client() -> NoReturn:
-    """Run the terminal client."""
-    client = TerminalClient()
+    """Run WebSocket client."""
+    config = get_client_config()
+    client = None
     
+    # Initialize client state
+    state = create_client_state()
+    
+    def set_state(new_state: ClientState) -> None:
+        """Update client state."""
+        nonlocal state
+        state = new_state
+
     try:
-        await client.connect_to_lobby()
-        client.print_help()
-        
-        while True:
-            command = input("> ")
-            should_continue = await client.handle_command(command)
-            if not should_continue:
-                break
-                
-    except ConnectionError as e:
-        print(f"Connection error: {e}")
-    except KeyboardInterrupt:
-        print("\nExiting...")
-    finally:
-        # Cleanup connections
-        if client.game_connection:
-            await client.game_connection.disconnect()
-        if client.lobby_connection:
-            await client.lobby_connection.disconnect()
+        # Connect to server
+        logger.info(f"Connecting to server at {config['server_host']}:{config['port']}...")
+        client = await connect(f"ws://{config['server_host']}:{config['port']}")
+        logger.info("Connected to server.")
+
+        # Start message handling with state management
+        message_task = asyncio.create_task(
+            start_message_handler(client, create_message_handlers(state, set_state, client))
+        )
+
+        # Give message handler a chance to initialize
+        await asyncio.sleep(0.1)
+
+        # Start terminal UI with WebSocket client and token
+        ui_task = asyncio.create_task(
+            run_terminal_ui_adapter(client, state["token"])
+        )
+
+        # Wait for both tasks to complete
+        try:
+            await asyncio.gather(message_task, ui_task)
+        except asyncio.CancelledError:
+            logger.info("Tasks cancelled")
+            # Cancel both tasks
+            message_task.cancel()
+            ui_task.cancel()
+            try:
+                await message_task
+            except asyncio.CancelledError:
+                pass
+            try:
+                await ui_task
+            except asyncio.CancelledError:
+                pass
+            raise
+
+    except (asyncio.CancelledError, KeyboardInterrupt) as e:
+        logger.info("Disconnecting from server...")
+        if client:
+            await disconnect(client)
+        logger.info("Disconnected.")
+        if isinstance(e, asyncio.CancelledError):
+            raise
+    
+    except Exception as e:
+        logger.error(f"Error running client: {e}", exc_info=True)
+        if client:
+            await disconnect(client)
+        raise
 
 def main() -> NoReturn:
     """Main entry point."""

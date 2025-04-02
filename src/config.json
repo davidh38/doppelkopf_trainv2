@@ -1,3 +1,10 @@
 {
-  "ui_adapter_type": "terminal"
+    "server": {
+        "port": 8000,
+        "host": "localhost"
+    },
+    "client": {
+        "server_host": "localhost",
+        "port": 8000
+    }
 }

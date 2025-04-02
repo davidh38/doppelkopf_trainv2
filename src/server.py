@@ -1,50 +1,42 @@
+#!/usr/bin/env python3
 """
 Server entry point.
-Runs the game server with configured adapters.
+Runs the WebSocket server with game and lobby functionality.
 """
 import asyncio
 from typing import NoReturn
-from src.config import get_server_config
-from src.wiring.service_wiring import create_game_environment, create_lobby_environment
+from config import get_server_config
+from socket_adapter.server_adapter import create_server, start_server, stop_server
 
 async def run_server() -> NoReturn:
-    """Run game and lobby servers."""
+    """Run WebSocket server."""
     config = get_server_config()
-    
+    server = None
+
     try:
-        # Create game and lobby services
-        print(f"Starting game server on port {config['game_port']}...")
-        game_service = await create_game_environment(config['game_port'])
-        
-        print(f"Starting lobby server on port {config['lobby_port']}...")
-        lobby_service = await create_lobby_environment(config['lobby_port'])
-        
-        # Start services
-        await asyncio.gather(
-            game_service['server'].start(),
-            lobby_service['server'].start()
-        )
-        
-        print("Servers running. Press Ctrl+C to stop.")
-        
+        # Create and start server
+        print(f"Starting server on port {config['port']}...")
+        server = create_server(config['port'])  # No await needed - just creates state
+        await start_server(server)  # await needed - actually starts server
+
+        print("Server running. Press Ctrl+C to stop.")
+
         # Keep running until interrupted
         while True:
             await asyncio.sleep(1)
-            
-    except KeyboardInterrupt:
-        print("\nShutting down servers...")
-        if 'game_service' in locals():
-            await game_service['server'].stop()
-        if 'lobby_service' in locals():
-            await lobby_service['server'].stop()
-        print("Servers stopped.")
+
+    except (asyncio.CancelledError, KeyboardInterrupt) as e:
+        print("\nShutting down server...")
+        if server:
+            await stop_server(server)
+        print("Server stopped.")
+        if isinstance(e, asyncio.CancelledError):
+            raise
     
     except Exception as e:
-        print(f"Error running servers: {e}")
-        if 'game_service' in locals():
-            await game_service['server'].stop()
-        if 'lobby_service' in locals():
-            await lobby_service['server'].stop()
+        print(f"Error running server: {e}")
+        if server:
+            await stop_server(server)
         raise
 
 def main() -> NoReturn:

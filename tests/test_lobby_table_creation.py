@@ -1,60 +1,58 @@
 import pytest
 from src.services.lobby_table_handler import (
-    connect_player,
-    login_player,
-    create_table,
-    add_player_to_table,
-    get_lobby_status,
-    reset_lobby_status
+    create_empty_lobby,
+    handle_connect_player,
+    handle_login_player,
+    handle_create_table,
+    handle_add_player_to_table
 )
-from src.services.data_structures import Player, Table
-
 
 def test_lobby_table_creation():
     """
     Test case to create a lobby, connect players, login players,
     create a table, and add players to the table.
     """
-    # Use the reset function to initialize lobby_status with empty lists
-    reset_lobby_status()
+    # Initialize empty lobby state
+    lobby_state = create_empty_lobby()
 
     # 1. Connect player
-    connect_player("test_token_1")
-    current_status = get_lobby_status()
-    assert "test_token_1" in current_status.players
+    result = handle_connect_player(lobby_state, "test_token_1")
+    assert result[0], f"Failed to connect player: {result[2]}"
+    lobby_state = result[1]
+    assert "test_token_1" in lobby_state["players"]
 
     # 2. Login player
-    player1 = login_player("player1")
-    current_status = get_lobby_status()
-    assert player1 in current_status.players
+    result = handle_login_player(lobby_state, "player1")
+    assert result[0], f"Failed to login player: {result[2]}"
+    lobby_state, player1 = result[1]
+    assert player1 in lobby_state["players"]
 
     # 3. Connect player
-    connect_player("test_token_2")
-    current_status = get_lobby_status()
-    assert "test_token_2" in current_status.players
+    result = handle_connect_player(lobby_state, "test_token_2")
+    assert result[0], f"Failed to connect player: {result[2]}"
+    lobby_state = result[1]
+    assert "test_token_2" in lobby_state["players"]
 
     # 4. Login player
-    player2 = login_player("player2")
-    current_status = get_lobby_status()
-    assert player2 in current_status.players
+    result = handle_login_player(lobby_state, "player2")
+    assert result[0], f"Failed to login player: {result[2]}"
+    lobby_state, player2 = result[1]
+    assert player2 in lobby_state["players"]
 
     # 5. Create table
-    table = create_table("table1", 5)
-    current_status = get_lobby_status()
-    assert table in current_status.tables
+    result = handle_create_table(lobby_state, "table1", 5)
+    assert result[0], f"Failed to create table: {result[2]}"
+    lobby_state, table = result[1]
+    assert table in lobby_state["tables"]
 
     # 6. Add player to table
-    assert add_player_to_table(table, player1.name) is True
-    
-    # Verify the player was added to the table in lobby_status
-    current_status = get_lobby_status()
-    updated_table = next((t for t in current_status.tables if t.tablename == table.tablename), None)
-    assert player1.name in updated_table.players
+    result = handle_add_player_to_table(lobby_state, table, player1["name"])
+    assert result[0], f"Failed to add player to table: {result[2]}"
+    lobby_state, table = result[1]
+    assert player1["name"] in table["players"]
 
     # 7. Add player to table
-    assert add_player_to_table(table, player2.name) is True
-    
-    # Verify the player was added to the table in lobby_status
-    current_status = get_lobby_status()
-    updated_table = next((t for t in current_status.tables if t.tablename == table.tablename), None)
-    assert player2.name in updated_table.players
+    result = handle_add_player_to_table(lobby_state, table, player2["name"])
+    assert result[0], f"Failed to add player to table: {result[2]}"
+    lobby_state, table = result[1]
+    assert player2["name"] in table["players"]
