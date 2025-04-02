@@ -5,43 +5,21 @@ from services.lobby_table_handler import create_table, add_player_to_table, star
 from services.data_structures import TableType, PlayerType
 from .game_output import run_game_interface
 import asyncio
-
 import logging
+
 logger = logging.getLogger('client.ui')
 
-# Local state management
+# Main data structure defined globally but only used by websocket client's message handlers
 _current_lobby = create_empty_lobby()
 
 def get_lobby_state() -> Dict:
-    """Get current lobby state."""
+    """Get current lobby state. Only used by websocket client's message handlers."""
     return _current_lobby
 
 def set_lobby_state(state: Dict) -> None:
-    """Update lobby state."""
+    """Update lobby state. Only used by websocket client's message handlers."""
     global _current_lobby
     _current_lobby = state.copy()  # Make a copy to ensure state isolation
-
-async def run_terminal_ui_adapter(websocket_client: Any, initial_token: Optional[str] = None) -> NoReturn:
-    """
-    Public API: Run the terminal UI adapter.
-    This is the only public function that should be called from outside.
-    
-    Args:
-        websocket_client: WebSocket client instance
-        initial_token: Optional initial player token
-    """
-    token = initial_token
-    while True:
-        # Get current state and render screen
-        lobby_status = get_lobby_state()
-        command, args, token = _render_screen(lobby_status["players"], token)
-        
-        # Handle command
-        should_exit, token = await _handle_command(command, args, token, lobby_status, websocket_client)
-        if should_exit:
-            break
-
-# Private Implementation
 
 def _format_player(player: PlayerType) -> str:
     """Format player info for display"""
@@ -74,23 +52,22 @@ def _get_user_input(token: Optional[str]) -> Tuple[str, str, Optional[str]]:
     # Keep the token unless explicitly logging out
     return command, args, token
 
-def _output_lobby(lobby_list: List[PlayerType]) -> None:
+def _output_lobby(lobby_state: Dict) -> None:
     """
     Output all players in the lobby and tables with their players
     """
-    lobby_status = get_lobby_state()
     print("Lobby:")
     print("  Players:")
-    for player in lobby_status["players"]:
+    for player in lobby_state["players"]:
         if isinstance(player, dict):
             print(f"    - {_format_player(player)}")
         else:
             print(f"    - {player}")
     print("  Tables:")
-    for table in lobby_status["tables"]:
+    for table in lobby_state["tables"]:
         player_names = []
         for player_token in table["players"]:
-            player = next((p for p in lobby_status["players"] if isinstance(p, dict) and p["uuid"] == player_token), None)
+            player = next((p for p in lobby_state["players"] if isinstance(p, dict) and p["uuid"] == player_token), None)
             if player:
                 player_names.append(_format_player(player))
             else:
@@ -103,12 +80,12 @@ def _output_table(table: TableType) -> None:
     print(f"  - Name: {table['tablename']}")
     print(f"  - Players: {', '.join(table['players']) if table['players'] else 'None'}")
 
-def _render_screen(lobby_list: List[PlayerType], token: Optional[str] = None) -> Tuple[str, str, Optional[str]]:
+def _render_screen(lobby_state: Dict, token: Optional[str] = None) -> Tuple[str, str, Optional[str]]:
     """
     Render the current screen and get user input.
     
     Args:
-        lobby_list: List of players in the lobby (unused, using get_lobby_state instead)
+        lobby_state: Current lobby state
         token: Optional current player's token
         
     Returns:
@@ -118,18 +95,17 @@ def _render_screen(lobby_list: List[PlayerType], token: Optional[str] = None) ->
             - token is the player's token (None if not connected)
     """
     _clear_screen()
-    lobby_status = get_lobby_state()
-    _output_lobby(lobby_status["players"])
+    _output_lobby(lobby_state)
     
     if token:
-        player = next((p for p in lobby_status["players"] if isinstance(p, dict) and p["uuid"] == token), None)
+        player = next((p for p in lobby_state["players"] if isinstance(p, dict) and p["uuid"] == token), None)
         if player:
             print(f"\nConnected as: {_format_player(player)}")
     
     _display_menu(token)
     return _get_user_input(token)
 
-async def _handle_command(command: str, args: str, token: Optional[str], lobby_status: Dict, websocket_client: Any) -> Tuple[bool, Optional[str]]:
+async def _handle_command(command: str, args: str, token: Optional[str], lobby_state: Dict, websocket_client: Any) -> Tuple[bool, Optional[str]]:
     """
     Handle a single command and return whether to exit and the new token state.
     
@@ -137,7 +113,7 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
         command: The command to execute (1-5)
         args: Additional arguments for the command
         token: Current player token
-        lobby_status: Current lobby state
+        lobby_state: Current lobby state
         websocket_client: WebSocket client instance
         
     Returns:
@@ -151,7 +127,7 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                 print("Example: 5 john")
             else:
                 # Find player in lobby state
-                for player in lobby_status["players"]:
+                for player in lobby_state["players"]:
                     if isinstance(player, dict) and player["name"] == args:
                         print("\nError: Player name already exists")
                         input("Press Enter to continue...")
@@ -163,7 +139,7 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                 # Wait a moment for the connection response and lobby update
                 await asyncio.sleep(0.5)
                 # Find player in updated lobby state to get token
-                current_state = get_lobby_state()
+                current_state = get_lobby_state()  # Get latest state after websocket update
                 player = next((p for p in current_state["players"] if isinstance(p, dict) and p["name"] == args), None)
                 if player:
                     token = player["uuid"]
@@ -200,7 +176,7 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
             if not args:
                 print("\nError: Table name required")
             else:
-                table = next((t for t in lobby_status["tables"] if t["tablename"].lower() == args.lower()), None)
+                table = next((t for t in lobby_state["tables"] if t["tablename"].lower() == args.lower()), None)
                 if table:
                     from socket_adapter.client_adapter import send_message
                     await send_message(websocket_client, 'join_table', {
@@ -219,7 +195,7 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
             if not args:
                 print("\nError: Table name required")
             else:
-                table = next((t for t in lobby_status["tables"] if t["tablename"].lower() == args.lower()), None)
+                table = next((t for t in lobby_state["tables"] if t["tablename"].lower() == args.lower()), None)
                 if table:
                     from socket_adapter.client_adapter import send_message
                     await send_message(websocket_client, 'start_table', {
@@ -257,3 +233,23 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
         print(f"\nError: {str(e)}")
         input("Press Enter to continue...")
         return False, token
+
+async def run_terminal_ui_adapter(websocket_client: Any, initial_token: Optional[str] = None) -> NoReturn:
+    """
+    Public API: Run the terminal UI adapter.
+    This is the only public function that should be called from outside.
+    
+    Args:
+        websocket_client: WebSocket client instance
+        initial_token: Optional initial player token
+    """
+    token = initial_token
+    while True:
+        # Get current state and render screen
+        current_state = get_lobby_state()  # Get latest state from websocket updates
+        command, args, token = _render_screen(current_state, token)
+        
+        # Handle command
+        should_exit, token = await _handle_command(command, args, token, current_state, websocket_client)
+        if should_exit:
+            break
