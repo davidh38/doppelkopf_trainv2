@@ -1,6 +1,6 @@
 # src/ui-adapter/terminal/lobby_table_output.py
 
-from typing import Tuple, Optional, List, NoReturn, Dict, Any
+from typing import Tuple, Optional, List, NoReturn, Dict, Any, Literal
 from services.lobby_table_handler import create_table, add_player_to_table, start_table, create_empty_lobby
 from services.data_structures import create_player, create_table, create_lobby_status
 from .game_output import run_game_interface
@@ -81,6 +81,25 @@ def _output_table(table: Dict[str, Any]) -> None:
     print("Table:")
     print(f"  - Name: {table['tablename']}")
     print(f"  - Players: {', '.join(table['players']) if table['players'] else 'None'}")
+
+def determine_ui_state(lobby_state: Dict, player_token: Optional[str]) -> Tuple[Literal["lobby", "game"], Optional[Dict]]:
+    """
+    Pure function to determine which UI to show.
+    Returns tuple of (ui_type, table_data):
+    - ui_type: 'game' or 'lobby'
+    - table_data: table dict if game UI, None if lobby UI
+    """
+    if not player_token:
+        return "lobby", None
+        
+    # Find any table that has this player and has started a game
+    for table in lobby_state.get("tables", []):
+        if (player_token in table.get("players", []) and 
+            table.get("rounds") and 
+            len(table.get("rounds", [])) > 0):
+            return "game", table
+            
+    return "lobby", None
 
 def _render_screen(lobby_state: Dict, token: Optional[str] = None) -> Tuple[str, str, Optional[str]]:
     """
@@ -293,12 +312,22 @@ async def run_terminal_ui_adapter(websocket_client: Any, initial_token: Optional
     token = initial_token
     
     while True:
-        # Get user input
-        command, args, token = _render_screen(state, token)
+        # Determine which UI to show
+        ui_type, table_data = determine_ui_state(state, token)
         
-        # Handle command and get new state
-        should_exit, token, state = await _handle_command(
-            command, args, token, state, websocket_client
-        )
-        if should_exit:
-            break
+        if ui_type == "game" and table_data:
+            # Switch to game UI
+            run_game_interface(table_data, token)
+            # After game ends, refresh state
+            from services.state import get_lobby_state
+            state = get_lobby_state()
+        else:
+            # Show lobby UI and get user input
+            command, args, token = _render_screen(state, token)
+            
+            # Handle command and get new state
+            should_exit, token, state = await _handle_command(
+                command, args, token, state, websocket_client
+            )
+            if should_exit:
+                break
