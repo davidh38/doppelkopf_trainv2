@@ -81,7 +81,10 @@ async def run_client() -> NoReturn:
     try:
         # Connect to server
         logger.info(f"Connecting to server at {config['server_host']}:{config['port']}...")
-        client = await connect(f"ws://{config['server_host']}:{config['port']}")
+        client = await connect(
+            f"ws://{config['server_host']}:{config['port']}", 
+            ping_timeout=config.get('ping_timeout', None)
+        )
         logger.info("Connected to server.")
 
         # Start message handling with state management

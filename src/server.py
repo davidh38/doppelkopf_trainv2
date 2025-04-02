@@ -17,6 +17,7 @@ async def run_server() -> NoReturn:
         # Create and start server
         print(f"Starting server on port {config['port']}...")
         server = create_server(config['port'])  # No await needed - just creates state
+        server['ping_timeout'] = config.get('ping_timeout', None)  # Add ping timeout from config
         await start_server(server)  # await needed - actually starts server
 
         print("Server running. Press Ctrl+C to stop.")
