@@ -16,8 +16,8 @@ async def run_server() -> NoReturn:
     try:
         # Create and start server
         print(f"Starting server on port {config['port']}...")
-        server = await create_server(config['port'])
-        await start_server(server)
+        server = create_server(config['port'])  # No await needed - just creates state
+        await start_server(server)  # await needed - actually starts server
 
         print("Server running. Press Ctrl+C to stop.")
 

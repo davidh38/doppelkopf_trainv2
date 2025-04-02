@@ -21,8 +21,8 @@ Server = Dict[str, Any]
 
 # Pure functions for state management
 
-def create_server_state(port: int) -> Server:
-    """Create immutable server state dictionary."""
+def create_server(port: int) -> Server:
+    """Create WebSocket server instance."""
     return {
         'port': port,
         'clients': set(),  # Set of ClientState tuples
@@ -198,10 +198,6 @@ async def handle_client(server: Server, websocket: WebSocketServerProtocol) -> N
             await broadcast_lobby_status(server)
 
 # Public API
-
-async def create_server(port: int) -> Server:
-    """Create WebSocket server instance."""
-    return create_server_state(port)
 
 async def start_server(server: Server) -> None:
     """Start WebSocket server."""

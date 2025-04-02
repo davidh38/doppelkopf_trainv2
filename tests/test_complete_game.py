@@ -1,12 +1,11 @@
 import pytest
 from typing import Dict, List, Tuple
 from src.services.lobby_table_handler import (
-    login_player,
-    create_table,
-    add_player_to_table,
-    get_lobby_status,
-    reset_lobby_status,
-    start_table
+    create_empty_lobby,
+    handle_login_player,
+    handle_create_table,
+    handle_add_player_to_table,
+    handle_start_table
 )
 from src.services.game_handler import gameflow
 
@@ -15,27 +14,33 @@ def test_complete_two_round_game():
     Test a complete game with 4 players playing 2 rounds.
     This test simulates the entire game flow without frontend interaction.
     """
-    # Reset lobby state
-    reset_lobby_status()
+    # Initialize empty lobby state
+    lobby_state = create_empty_lobby()
     
     # Create and login 4 players
     players = []
     for i in range(4):
         player_name = f"Player{i+1}"
-        player = login_player(player_name)
+        result = handle_login_player(lobby_state, player_name)
+        assert result[0], f"Failed to login player: {result[2]}"  # Check success and error message
+        lobby_state, player = result[1]
         players.append(player)
-        assert player in get_lobby_status()["players"]
+        assert player in lobby_state["players"]
     
-    # Create table with 2 rounds and add players
-    table = create_table("TestTable", 2)
-    assert table in get_lobby_status()["tables"]
+    # Create table with 2 rounds
+    result = handle_create_table(lobby_state, "TestTable", 2)
+    assert result[0], f"Failed to create table: {result[2]}"
+    lobby_state, table = result[1]
+    assert table in lobby_state["tables"]
     
     # Convert table to mutable dict and ensure players is a tuple
     table = dict(table)
     table["players"] = tuple(p for p in players)  # Convert list to tuple explicitly
     
     # Start table
-    table = start_table(table)
+    result = handle_start_table(lobby_state, table)
+    assert result[0], f"Failed to start table: {result[2]}"
+    lobby_state, table = result[1]
     assert table["status"] == "playing"
     
     # Play first round
@@ -85,17 +90,30 @@ def test_game_state_transitions():
     """
     Test that game states transition correctly through a complete round.
     """
-    # Reset lobby state
-    reset_lobby_status()
+    # Initialize empty lobby state
+    lobby_state = create_empty_lobby()
     
     # Create and login 4 players
-    players = [login_player(f"Player{i+1}") for i in range(4)]
+    players = []
+    for i in range(4):
+        result = handle_login_player(lobby_state, f"Player{i+1}")
+        assert result[0], f"Failed to login player: {result[2]}"
+        lobby_state, player = result[1]
+        players.append(player)
     
-    # Create table and add players
-    table = create_table("TestTable", 1)
+    # Create table
+    result = handle_create_table(lobby_state, "TestTable", 1)
+    assert result[0], f"Failed to create table: {result[2]}"
+    lobby_state, table = result[1]
+    
+    # Convert table to mutable dict and add players
     table = dict(table)
     table["players"] = tuple(p for p in players)  # Convert list to tuple explicitly
-    table = start_table(table)
+    
+    # Start table
+    result = handle_start_table(lobby_state, table)
+    assert result[0], f"Failed to start table: {result[2]}"
+    lobby_state, table = result[1]
     
     # Play through game
     final_table = gameflow(table)
