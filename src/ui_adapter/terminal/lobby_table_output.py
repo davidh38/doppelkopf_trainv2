@@ -9,21 +9,6 @@ import logging
 
 logger = logging.getLogger('client.ui')
 
-# Main data structure defined globally but only used by websocket client's message handlers
-_current_lobby = create_empty_lobby()
-
-def get_lobby_state() -> Dict:
-    """Get current lobby state. Only used by websocket client's message handlers."""
-    return _current_lobby
-
-def set_lobby_state(state: Dict) -> None:
-    """Update lobby state. Only used by websocket client's message handlers."""
-    # Create new immutable state instead of modifying global
-    _current_lobby = create_lobby_status(
-        players=tuple(state["players"]),  # Convert to tuple for immutability
-        tables=tuple(state["tables"])
-    )
-
 def _format_player(player: Dict[str, Any]) -> str:
     """Format player info for display"""
     return player["name"]
@@ -108,7 +93,13 @@ def _render_screen(lobby_state: Dict, token: Optional[str] = None) -> Tuple[str,
     _display_menu(token)
     return _get_user_input(token)
 
-async def _handle_command(command: str, args: str, token: Optional[str], lobby_state: Dict, websocket_client: Any) -> Tuple[bool, Optional[str]]:
+async def _handle_command(
+    command: str,
+    args: str,
+    token: Optional[str],
+    state: Dict,
+    websocket_client: Any
+) -> Tuple[bool, Optional[str], Dict]:
     """
     Handle a single command and return whether to exit and the new token state.
     
@@ -116,11 +107,11 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
         command: The command to execute (1-5)
         args: Additional arguments for the command
         token: Current player token
-        lobby_state: Current lobby state
+        state: Current lobby state
         websocket_client: WebSocket client instance
         
     Returns:
-        tuple: (should_exit, new_token)
+        tuple: (should_exit, new_token, new_state)
     """
     try:
         if command == "5":  # Connect player
@@ -130,23 +121,28 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                 print("Example: 5 john")
             else:
                 # Find player in lobby state
-                for player in lobby_state["players"]:
+                for player in state["players"]:
                     if isinstance(player, dict) and player["name"] == args:
                         print("\nError: Player name already exists")
                         input("Press Enter to continue...")
-                        return False, token
+                        return False, token, state
                 
                 from socket_adapter.client_adapter import send_message
                 await send_message(websocket_client, 'player_connect', {'name': args, 'type': 'player'})
                 print("\nConnecting...")
                 # Wait a moment for the connection response and lobby update
                 await asyncio.sleep(0.5)
-                # Find player in updated lobby state to get token
-                current_state = get_lobby_state()  # Get latest state after websocket update
-                player = next((p for p in current_state["players"] if isinstance(p, dict) and p["name"] == args), None)
+                # Update state with new player
+                new_state = create_lobby_status(
+                    players=tuple(p for p in state["players"]) + ({"name": args, "type": "player"},),
+                    tables=tuple(state["tables"])
+                )
+                # Find player to get token
+                player = next((p for p in new_state["players"] if isinstance(p, dict) and p["name"] == args), None)
                 if player:
                     token = player["uuid"]
-            return False, token
+                return False, token, new_state
+            return False, token, state
         
         elif command == "1" and token:  # Create table
             parts = args.split()
@@ -167,19 +163,30 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                             'rounds': rounds
                         })
                         print("\nCreating table...")
+                        # Update state with new table
+                        new_state = create_lobby_status(
+                            players=tuple(state["players"]),
+                            tables=tuple(state["tables"]) + ({
+                                "tablename": table_name,
+                                "players": [],
+                                "rounds": rounds,
+                                "status": "waiting"
+                            },)
+                        )
+                        return False, token, new_state
             except ValueError:
                 print("\nError: Number of rounds must be a valid positive number")
                 print("Example: 1 mytable 3")
             # Wait a moment for the server to process and broadcast
             await asyncio.sleep(0.5)
             input("Press Enter to continue...")
-            return False, token
+            return False, token, state
         
         elif command == "2" and token:  # Join table
             if not args:
                 print("\nError: Table name required")
             else:
-                table = next((t for t in lobby_state["tables"] if t["tablename"].lower() == args.lower()), None)
+                table = next((t for t in state["tables"] if t["tablename"].lower() == args.lower()), None)
                 if table:
                     from socket_adapter.client_adapter import send_message
                     await send_message(websocket_client, 'join_table', {
@@ -187,34 +194,54 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
                         'player_token': token
                     })
                     print("\nJoining table...")
+                    # Update state with joined table
+                    new_tables = list(state["tables"])
+                    for i, t in enumerate(new_tables):
+                        if t["tablename"] == table["tablename"]:
+                            new_tables[i] = {**t, "players": t["players"] + [token]}
+                    new_state = create_lobby_status(
+                        players=tuple(state["players"]),
+                        tables=tuple(new_tables)
+                    )
+                    return False, token, new_state
                 else:
                     print(f"\nError: Table '{args}' not found")
             # Wait a moment for the server to process and broadcast
             await asyncio.sleep(0.5)
             input("Press Enter to continue...")
-            return False, token
+            return False, token, state
         
         elif command == "3" and token:  # Start table
             if not args:
                 print("\nError: Table name required")
             else:
-                table = next((t for t in lobby_state["tables"] if t["tablename"].lower() == args.lower()), None)
+                table = next((t for t in state["tables"] if t["tablename"].lower() == args.lower()), None)
                 if table:
                     from socket_adapter.client_adapter import send_message
                     await send_message(websocket_client, 'start_table', {
                         'table_name': table["tablename"]
                     })
                     print("\nStarting table...")
+                    # Update state with started table
+                    new_tables = list(state["tables"])
+                    for i, t in enumerate(new_tables):
+                        if t["tablename"] == table["tablename"]:
+                            new_tables[i] = {**t, "status": "running"}
+                    new_state = create_lobby_status(
+                        players=tuple(state["players"]),
+                        tables=tuple(new_tables)
+                    )
+                    return False, token, new_state
                 else:
                     print(f"\nError: Table '{args}' not found")
             # Wait a moment for the server to process and broadcast
             await asyncio.sleep(0.5)
             input("Press Enter to continue...")
-            return False, token
+            return False, token, state
         
         elif command == "4":  # Exit
             print("\nGoodbye!")
-            return True, token
+            return True, token, state
             
         elif command == "6" and token:  # Refresh lobby status
             from socket_adapter.client_adapter import send_message
@@ -222,7 +249,7 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
             print("\nRefreshing lobby status...")
             await asyncio.sleep(0.5)  # Wait for response
             input("Press Enter to continue...")
-            return False, token
+            return False, token, state
         
         else:
             if not token and command != "5":
@@ -230,12 +257,12 @@ async def _handle_command(command: str, args: str, token: Optional[str], lobby_s
             else:
                 print("\nError: Invalid command")
             input("Press Enter to continue...")
-            return False, token
+            return False, token, state
             
     except Exception as e:
         print(f"\nError: {str(e)}")
         input("Press Enter to continue...")
-        return False, token
+        return False, token, state
 
 async def run_terminal_ui_adapter(websocket_client: Any, initial_token: Optional[str] = None) -> NoReturn:
     """
@@ -246,13 +273,16 @@ async def run_terminal_ui_adapter(websocket_client: Any, initial_token: Optional
         websocket_client: WebSocket client instance
         initial_token: Optional initial player token
     """
+    state = create_empty_lobby()  # Local state
     token = initial_token
+    
     while True:
-        # Get current state and render screen
-        current_state = get_lobby_state()  # Get latest state from websocket updates
-        command, args, token = _render_screen(current_state, token)
+        # Get user input
+        command, args, token = _render_screen(state, token)
         
-        # Handle command
-        should_exit, token = await _handle_command(command, args, token, current_state, websocket_client)
+        # Handle command and get new state
+        should_exit, token, state = await _handle_command(
+            command, args, token, state, websocket_client
+        )
         if should_exit:
             break
