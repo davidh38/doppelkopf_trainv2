@@ -11,6 +11,8 @@ logger = logging.getLogger('client.ui')
 
 def _format_player(player: Dict[str, Any]) -> str:
     """Format player info for display"""
+    if not isinstance(player, dict) or "name" not in player:
+        return "Invalid player"
     return player["name"]
 
 def _clear_screen() -> None:
@@ -47,19 +49,28 @@ def _output_lobby(lobby_state: Dict) -> None:
     print("Lobby:")
     print("  Players:")
     for player in lobby_state["players"]:
-        if isinstance(player, dict):
+        if isinstance(player, dict) and all(k in player for k in ["name", "uuid"]):
             print(f"    - {_format_player(player)}")
         else:
-            print(f"    - {player}")
+            logger.warning(f"Skipping invalid player object: {player}")
+    
     print("  Tables:")
-    for table in lobby_state["tables"]:
+    for table in lobby_state.get("tables", []):
+        if not isinstance(table, dict) or "tablename" not in table or "players" not in table:
+            logger.warning(f"Skipping invalid table object: {table}")
+            continue
+            
         player_names = []
         for player_token in table["players"]:
-            player = next((p for p in lobby_state["players"] if isinstance(p, dict) and p["uuid"] == player_token), None)
+            player = next((p for p in lobby_state["players"] 
+                         if isinstance(p, dict) and 
+                         p.get("uuid") == player_token and
+                         "name" in p), None)
             if player:
                 player_names.append(_format_player(player))
             else:
-                player_names.append(player_token)
+                player_names.append(f"Unknown({player_token})")
+        
         print(f"    - {table['tablename']} (Players: {', '.join(player_names) if player_names else 'None'})")
 
 def _output_table(table: Dict[str, Any]) -> None:
@@ -132,15 +143,21 @@ async def _handle_command(
                 print("\nConnecting...")
                 # Wait a moment for the connection response and lobby update
                 await asyncio.sleep(0.5)
-                # Update state with new player
-                new_state = create_lobby_status(
-                    players=tuple(p for p in state["players"]) + ({"name": args, "type": "player"},),
-                    tables=tuple(state["tables"])
-                )
+                # Wait for server response to get player data
+                await asyncio.sleep(0.5)
+                # Get updated state which should include the new player
+                from services.state import get_lobby_state
+                new_state = get_lobby_state()
                 # Find player to get token
-                player = next((p for p in new_state["players"] if isinstance(p, dict) and p["name"] == args), None)
+                player = next((p for p in new_state["players"] 
+                             if isinstance(p, dict) and 
+                             p.get("name") == args and 
+                             "uuid" in p), None)
                 if player:
                     token = player["uuid"]
+                else:
+                    print("\nError: Failed to get player token")
+                    input("Press Enter to continue...")
                 return False, token, new_state
             return False, token, state
         

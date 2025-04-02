@@ -1,7 +1,7 @@
 # data_structures.py
 
 from frozendict import frozendict
-from typing import Dict, Tuple, Any, Union, Optional
+from typing import Dict, Tuple, Any, Union, Optional, TypedDict
 from datetime import datetime
 
 """
@@ -66,7 +66,13 @@ GAME_PHASES = ("variant", "armut", "playing")
 ANNOUNCEMENT_TYPES = ("re", "kontra", "no90", "no60", "no30", "schwarz")
 TEAM_TYPES = ("re", "kontra", "unknown")
 
-# Helper functions to create immutable instances
+def create_empty_lobby() -> Dict:
+    """Create an empty lobby status."""
+    return frozendict({
+        "players": tuple(),  # Use tuple instead of list for immutability
+        "tables": tuple()
+    })
+
 def create_player(session: str, name: str, type_: str, uuid: str) -> Dict:
     """Create an immutable player dictionary"""
     return frozendict({
