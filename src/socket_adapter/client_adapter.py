@@ -88,7 +88,11 @@ async def connect(url: str) -> ClientState:
         ConnectionError: If connection fails
     """
     try:
-        websocket = await websockets.connect(url)
+        websocket = await websockets.connect(
+            url,
+            ping_interval=20,    # Send ping every 20 seconds
+            ping_timeout=60      # Wait 60 seconds for pong response
+        )
         return create_client_state(websocket)
     except Exception as e:
         raise ConnectionError(f"Failed to connect: {str(e)}")

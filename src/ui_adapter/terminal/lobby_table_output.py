@@ -36,6 +36,9 @@ def _get_user_input(token: Optional[str]) -> Tuple[str, str, Optional[str]]:
     user_input = input("\nEnter command: ").strip().lower()
     parts = user_input.split()
     
+    if not parts:  # Handle empty input
+        return "", "", token
+    
     command = parts[0]
     args = " ".join(parts[1:]) if len(parts) > 1 else ""
     
