@@ -1,5 +1,5 @@
 ** Data Structures
-- The following immutable data structures will be created:
+- The following immutable data structures are used:
 
 *** playerdict
 - session: str  # Unique session identifier for the current connection
@@ -45,3 +45,13 @@
 - rank: str       # Card rank
 - value: int      # Card point value
 - is_trump: bool  # Whether the card is a trump card
+
+*** Implementation Notes
+- All dictionaries are immutable (using frozendict)
+- Lists are replaced with tuples for immutability
+- Helper functions create immutable instances:
+  - create_player()
+  - create_card()
+  - create_announcement()
+  - create_table()
+  - create_lobby_status()
