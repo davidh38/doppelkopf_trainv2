@@ -8,6 +8,7 @@ import asyncio
 import websockets
 from typing import Dict, Set, Any, Tuple
 from datetime import datetime
+from frozendict import frozendict
 from websockets.server import WebSocketServerProtocol
 from services.lobby_table_handler import (
     create_empty_lobby, handle_login_player,
@@ -18,6 +19,21 @@ from services.game_handler import create_initial_game_state
 # Type aliases
 ClientState = Tuple[WebSocketServerProtocol, datetime]  # (websocket, last_heartbeat)
 Server = Dict[str, Any]
+
+def serialize_lobby_status(status: Any) -> Any:
+    """Convert frozen structures and datetime to JSON-serializable types."""
+    if isinstance(status, frozendict):
+        status = dict(status)
+    elif isinstance(status, datetime):
+        return status.timestamp()
+    
+    # Handle nested structures
+    if isinstance(status, dict):
+        return {k: serialize_lobby_status(v) for k, v in status.items()}
+    if isinstance(status, (list, tuple)):
+        return [serialize_lobby_status(x) for x in status]
+    
+    return status
 
 # Pure functions for state management
 
@@ -40,7 +56,7 @@ async def send_message(websocket: WebSocketServerProtocol, msg_type: str, payloa
     """Send message to client."""
     message = json.dumps({
         'type': msg_type,
-        'payload': payload,
+        'payload': serialize_lobby_status(payload),
         'timestamp': datetime.now().timestamp()
     })
     await websocket.send(message)
@@ -52,7 +68,7 @@ async def broadcast_message(server: Server, msg_type: str, payload: dict) -> Non
         
     message = json.dumps({
         'type': msg_type,
-        'payload': payload,
+        'payload': serialize_lobby_status(payload),
         'timestamp': datetime.now().timestamp()
     })
     
@@ -210,7 +226,9 @@ async def start_server(server: Server) -> None:
         async with websockets.serve(
             lambda ws: handle_client(server, ws),
             'localhost',
-            server['port']
+            server['port'],
+            ping_interval=20,    # Send ping every 20 seconds
+            ping_timeout=60      # Wait 60 seconds for pong response
         ):
             await asyncio.Future()  # run forever
     
