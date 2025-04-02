@@ -180,16 +180,11 @@ async def _handle_command(
                             'rounds': rounds
                         })
                         print("\nCreating table...")
-                        # Update state with new table
-                        new_state = create_lobby_status(
-                            players=tuple(state["players"]),
-                            tables=tuple(state["tables"]) + ({
-                                "tablename": table_name,
-                                "players": [],
-                                "rounds": rounds,
-                                "status": "waiting"
-                            },)
-                        )
+                        # Wait for server to process and update state
+                        await asyncio.sleep(0.5)
+                        # Get fresh state after table creation
+                        from services.state import get_lobby_state
+                        new_state = get_lobby_state()
                         return False, token, new_state
             except ValueError:
                 print("\nError: Number of rounds must be a valid positive number")
@@ -211,15 +206,11 @@ async def _handle_command(
                         'player_token': token
                     })
                     print("\nJoining table...")
-                    # Update state with joined table
-                    new_tables = list(state["tables"])
-                    for i, t in enumerate(new_tables):
-                        if t["tablename"] == table["tablename"]:
-                            new_tables[i] = {**t, "players": t["players"] + [token]}
-                    new_state = create_lobby_status(
-                        players=tuple(state["players"]),
-                        tables=tuple(new_tables)
-                    )
+                    # Wait for server to process and update state
+                    await asyncio.sleep(0.5)
+                    # Get fresh state after joining table
+                    from services.state import get_lobby_state
+                    new_state = get_lobby_state()
                     return False, token, new_state
                 else:
                     print(f"\nError: Table '{args}' not found")
@@ -239,15 +230,11 @@ async def _handle_command(
                         'table_name': table["tablename"]
                     })
                     print("\nStarting table...")
-                    # Update state with started table
-                    new_tables = list(state["tables"])
-                    for i, t in enumerate(new_tables):
-                        if t["tablename"] == table["tablename"]:
-                            new_tables[i] = {**t, "status": "running"}
-                    new_state = create_lobby_status(
-                        players=tuple(state["players"]),
-                        tables=tuple(new_tables)
-                    )
+                    # Wait for server to process and update state
+                    await asyncio.sleep(0.5)
+                    # Get fresh state after starting table
+                    from services.state import get_lobby_state
+                    new_state = get_lobby_state()
                     return False, token, new_state
                 else:
                     print(f"\nError: Table '{args}' not found")
@@ -262,11 +249,20 @@ async def _handle_command(
             
         elif command == "6" and token:  # Refresh lobby status
             from socket_adapter.client_adapter import send_message
+            from services.state import get_lobby_state
+            
+            # Send refresh request
             await send_message(websocket_client, 'get_lobby_status', {})
             print("\nRefreshing lobby status...")
-            await asyncio.sleep(0.5)  # Wait for response
+            
+            # Wait for server response and state update
+            await asyncio.sleep(0.5)
+            
+            # Get fresh state after update
+            new_state = get_lobby_state()
+            
             input("Press Enter to continue...")
-            return False, token, state
+            return False, token, new_state  # Return new state instead of old state
         
         else:
             if not token and command != "5":
