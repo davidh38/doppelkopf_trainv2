@@ -3,21 +3,15 @@
 from typing import Tuple, List, Dict, Any, Callable, Optional, Union
 import random
 from .game_handler import play_table_rounds
+from .data_structures import create_empty_lobby, create_player, create_table as create_table_dict
 
 # Type aliases
 PlayerType = Dict[str, str]
 TableType = Dict[str, Any]
-LobbyStatusType = Dict[str, List]
+LobbyStatusType = Dict[str, Tuple]  # Changed from List to Tuple
 Result = Tuple[bool, Optional[Any], Optional[str]]  # (success, value, error)
 
 # Pure functions for state management
-
-def create_empty_lobby() -> LobbyStatusType:
-    """Create an empty lobby status."""
-    return {
-        "players": [],
-        "tables": []
-    }
 
 def create_result(success: bool, value: Any = None, error: str = None) -> Result:
     """Create result tuple."""
@@ -29,7 +23,7 @@ def connect_player(status: LobbyStatusType, token: str) -> Result:
         return create_result(False, error="Token is required")
     
     new_status = {
-        "players": status["players"] + [token],
+        "players": status["players"] + (token,),  # Convert to tuple
         "tables": status["tables"]
     }
     return create_result(True, new_status)
@@ -45,14 +39,14 @@ def login_player(status: LobbyStatusType, name: str) -> Result:
             return create_result(False, error="Player name already exists")
     
     token = f"token_{random.randint(10000, 99999)}"
-    player = {
-        "session": "",
-        "name": name,
-        "type": "",
-        "uuid": token
-    }
+    player = create_player(
+        session="",
+        name=name,
+        type_="",
+        uuid=token
+    )
     new_status = {
-        "players": status["players"] + [player],
+        "players": status["players"] + (player,),  # Convert to tuple
         "tables": status["tables"]
     }
     print(f"Created player: {player}")  # Debug print
@@ -66,17 +60,15 @@ def create_table(status: LobbyStatusType, name: str, rounds: int) -> Result:
     if rounds <= 0:
         return create_result(False, error="Number of rounds must be positive")
     
-    table = {
-        "tablename": name,
-        "players": [],
-        "status": "open",
-        "rounds": None,
-        "num_rounds": rounds,
-        "game_dict": ""
-    }
+    table = create_table_dict(
+        tablename=name,
+        players=tuple(),  # Empty tuple
+        rounds=tuple(),   # Empty tuple
+        status="open"
+    )
     new_status = {
         "players": status["players"],
-        "tables": status["tables"] + [table]
+        "tables": status["tables"] + (table,)  # Convert to tuple
     }
     return create_result(True, (new_status, table))
 
@@ -87,13 +79,14 @@ def add_player_to_table(status: LobbyStatusType, table: TableType, player_name: 
     
     updated_table = {
         **table,
-        "players": table["players"] + [player_name]
+        "players": table["players"] + (player_name,)  # Convert to tuple
     }
     
-    updated_tables = [
+    # Convert list comprehension to tuple
+    updated_tables = tuple(
         updated_table if t["tablename"] == table["tablename"] else t
         for t in status["tables"]
-    ]
+    )
     
     new_status = {
         "players": status["players"],
@@ -110,13 +103,14 @@ def start_table(status: LobbyStatusType, table: TableType) -> Result:
     updated_table = {
         **table,
         "status": "playing",
-        "rounds": []
+        "rounds": tuple()  # Empty tuple
     }
     
-    updated_tables = [
+    # Convert list comprehension to tuple
+    updated_tables = tuple(
         updated_table if t["tablename"] == table["tablename"] else t
         for t in status["tables"]
-    ]
+    )
     
     new_status = {
         "players": status["players"],

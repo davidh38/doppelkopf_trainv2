@@ -10,7 +10,7 @@ from typing import NoReturn, Dict, Any, Optional, TypedDict, Callable
 from config import get_client_config
 from socket_adapter.client_adapter import connect, disconnect, send_message, start_message_handler
 from ui_adapter.terminal.lobby_table_output import run_terminal_ui_adapter
-from ui_adapter.terminal.lobby_table_output import get_lobby_state, set_lobby_state
+from services.state import get_lobby_state, set_lobby_state
 
 # Set up logging
 logging.basicConfig(
@@ -43,7 +43,7 @@ def create_message_handlers(state: ClientState, set_state: Callable[[ClientState
         """Update local lobby state."""
         logger.debug("Entering handle_lobby_update")
         logger.debug(f"Lobby update payload: {payload}")
-        set_lobby_state(payload)
+        set_lobby_state(payload)  # Use state module
         logger.debug("State updated")
 
     def handle_player_connected(payload: Dict[str, Any]) -> None:

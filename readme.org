@@ -68,7 +68,6 @@ graph TB
 - [[network_specification.org][Network Specification]]: WebSocket protocol and data structures
 - [[gameplay_specification.org][Gameplay Specification]]: Game mechanics and rules
 - [[lobby_and_table_creation_specification.org][Lobby and Table Creation]]: Server initialization and table management
-- [[table_creation_specification.org][Table Creation]]: Detailed table setup process
 - [[data_structures.org][Data Structures]]: Core data structure definitions
 
 * Implementation
