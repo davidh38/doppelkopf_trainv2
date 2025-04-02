@@ -18,8 +18,11 @@ def get_lobby_state() -> Dict:
 
 def set_lobby_state(state: Dict) -> None:
     """Update lobby state. Only used by websocket client's message handlers."""
-    global _current_lobby
-    _current_lobby = state.copy()  # Make a copy to ensure state isolation
+    # Create new immutable state instead of modifying global
+    _current_lobby = create_lobby_status(
+        players=tuple(state["players"]),  # Convert to tuple for immutability
+        tables=tuple(state["tables"])
+    )
 
 def _format_player(player: Dict[str, Any]) -> str:
     """Format player info for display"""
