@@ -2,7 +2,7 @@
 
 from typing import Tuple, Optional, List, NoReturn, Dict, Any
 from services.lobby_table_handler import create_table, add_player_to_table, start_table, create_empty_lobby
-from services.data_structures import TableType, PlayerType
+from services.data_structures import create_player, create_table, create_lobby_status
 from .game_output import run_game_interface
 import asyncio
 import logging
@@ -21,7 +21,7 @@ def set_lobby_state(state: Dict) -> None:
     global _current_lobby
     _current_lobby = state.copy()  # Make a copy to ensure state isolation
 
-def _format_player(player: PlayerType) -> str:
+def _format_player(player: Dict[str, Any]) -> str:
     """Format player info for display"""
     return player["name"]
 
@@ -74,7 +74,7 @@ def _output_lobby(lobby_state: Dict) -> None:
                 player_names.append(player_token)
         print(f"    - {table['tablename']} (Players: {', '.join(player_names) if player_names else 'None'})")
 
-def _output_table(table: TableType) -> None:
+def _output_table(table: Dict[str, Any]) -> None:
     """Output table information"""
     print("Table:")
     print(f"  - Name: {table['tablename']}")
