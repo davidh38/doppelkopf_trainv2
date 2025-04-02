@@ -74,12 +74,13 @@ async def handle_messages(client: ClientState, handlers: MessageHandlers) -> Non
 
 # Public API
 
-async def connect(url: str) -> ClientState:
+async def connect(url: str, ping_timeout: int = None) -> ClientState:
     """
     Establish WebSocket connection to server.
     
     Args:
         url: WebSocket server URL
+        ping_timeout: Optional ping timeout in seconds
         
     Returns:
         ClientState tuple
@@ -88,7 +89,7 @@ async def connect(url: str) -> ClientState:
         ConnectionError: If connection fails
     """
     try:
-        websocket = await websockets.connect(url)
+        websocket = await websockets.connect(url, ping_timeout=ping_timeout)
         return create_client_state(websocket)
     except Exception as e:
         raise ConnectionError(f"Failed to connect: {str(e)}")

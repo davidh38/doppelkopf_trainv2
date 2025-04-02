@@ -210,7 +210,8 @@ async def start_server(server: Server) -> None:
         async with websockets.serve(
             lambda ws: handle_client(server, ws),
             'localhost',
-            server['port']
+            server['port'],
+            ping_timeout=server.get('ping_timeout', None)
         ):
             await asyncio.Future()  # run forever
     
